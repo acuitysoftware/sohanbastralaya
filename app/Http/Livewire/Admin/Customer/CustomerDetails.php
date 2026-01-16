@@ -31,10 +31,11 @@ class CustomerDetails extends Component
     use WithSorting;
     use AlertMessage;
     public $card_details, $total_credit_points, $perPage, $returnOrder, $setting,$memberships=[],$dateForm, $dateTo;
-    public $searchName, $customer_details =[], $orderDetails, $viewOrder=[], $expiry_date_count, $storeUser, $contact;
+    public $searchName, $customer_details =[], $orderDetails, $viewOrder=[], $expiry_date_count, $storeUser, $contact,$perNo;
 	protected $listeners = ['viewCustomer', 'loadMore', 'customerDetails'];
 	public function mount($contact)
 	{
+        $this->perNo = request()->perNo??200;
 		$this->contact = $contact;
 		$this->perPage =200;
         $this->setting = Setting::first();

@@ -508,6 +508,18 @@ class ProductList extends Component
             //dd($this->formSubmit);
             if($this->storeUser == 1)
             {
+                $barCode = null;
+                while (true) {
+                    $numSeed = "0123456789";
+                    $shuffled = str_shuffle($numSeed);
+                    $barCode  =  substr($shuffled,1,20);
+                    $barCode = $barCode;
+                    $oldData = Product::where('bar_code', $barCode)->count();
+                    if($oldData == 0)
+                    {
+                        break;
+                    }
+                }
                 while (true) {
                     $numSeed = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
                         $shuffled = str_shuffle($numSeed);
@@ -530,6 +542,7 @@ class ProductList extends Component
                     'discount_type' => $this->discount_type,
                     'discount_amt' => $this->discount_amt,
                     'product_code' => $code,
+                    'bar_code' => $barCode,
                     'quantity' => $this->quantity,
                     'default_quantity' => $this->default_quantity,
                     'selling_price' => $this->selling_price,
@@ -574,6 +587,18 @@ class ProductList extends Component
                 if($chk){
                     $slug=$slug."-".Product2::where('name_slug',$slug)->count();
                 }
+                $barCode = null;
+                while (true) {
+                    $numSeed = "0123456789";
+                    $shuffled = str_shuffle($numSeed);
+                    $barCode  =  substr($shuffled,1,20);
+                    $barCode = $barCode;
+                    $oldData = Product2::where('bar_code', $barCode)->count();
+                    if($oldData == 0)
+                    {
+                        break;
+                    }
+                }
 
                 $data = Product2::create([
                     'name' => $this->name,
@@ -581,6 +606,7 @@ class ProductList extends Component
                     'discount_type' => $this->discount_type,
                     'discount_amt' => $this->discount_amt,
                     'product_code' => $code,
+                    'bar_code' => $barCode,
                     'quantity' => $this->quantity,
                     'default_quantity' => $this->default_quantity,
                     'selling_price' => $this->selling_price,

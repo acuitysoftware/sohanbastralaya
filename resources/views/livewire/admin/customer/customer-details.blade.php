@@ -7,7 +7,7 @@
 	            		<h4 class="customer_view_title" id="primary-header-modalLabel">Orders of {{@$customer_details[0]->customer_name}}</h4>
 	            	</div>
 	            	<div class="col-xl-3 mt-2">
-	            		<a href="{{route('customer.index')}}" type="button" class="btn btn-danger" data-bs-dismiss="modal" style="float: right;">Back</a > 
+	            		<a href="{{route('customer.index')}}?perNo={{$perNo}}" type="button" class="btn btn-danger" data-bs-dismiss="modal" style="float: right;">Back</a > 
 	            	</div>
 	            </div>
           

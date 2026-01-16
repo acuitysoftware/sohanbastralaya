@@ -31,12 +31,13 @@ class CustomerData extends Component
     use WithSorting;
     use AlertMessage;
     public $card_details, $total_credit_points, $perPage, $returnOrder, $setting,$memberships=[],$dateForm, $dateTo;
-    public $searchName, $searchPhone, $searchCard, $customer_details =[], $orderDetails, $viewOrder=[], $expiry_date_count, $storeUser;
+    public $searchName, $searchPhone, $searchCard, $customer_details =[], $orderDetails, $viewOrder=[], $expiry_date_count,$perNo, $storeUser;
 	protected $listeners = ['viewCustomer', 'loadMore', 'customerDetails'];
 
 	public function mount()
     {
-        $this->perPage =200;
+        $this->perNo = request()->perNo??200;
+        $this->perPage =$this->perNo;
         $this->setting = Setting::first();
         if(Auth::user()->type=='A')
         {

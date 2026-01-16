@@ -81,6 +81,7 @@
 
                         </thead>
                         <tbody>
+                            
                         	@if(count($customers)>0)
                         	@foreach($customers as $key=>$row)
                             <tr>
@@ -90,7 +91,7 @@
                                 <td style="white-space: nowrap;">
                                     @if(Auth::user()->type=='A' || in_array('customer-view', Auth::user()->permissions()->pluck('permission')->toArray()))
                                     <!-- <a href="javascript:void(0);" class="action-icon" wire:click="viewCustomer({{$row->customer_phone}})"><i class="mdi mdi-eye"></i></a> -->
-                                    <a href="{{route('customer.details',$row->customer_phone)}}" class="action-icon"><i class="mdi mdi-eye"></i></a>
+                                    <a href="{{route('customer.details',$row->customer_phone)}}?perNo={{$perPage}}" class="action-icon"><i class="mdi mdi-eye"></i></a>
                                     @endif
                                 </td>
                             </tr>

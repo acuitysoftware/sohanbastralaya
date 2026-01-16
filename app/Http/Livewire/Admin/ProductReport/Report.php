@@ -46,6 +46,7 @@ class Report extends Component
         $this->product_purchase_price =0;
         $this->inseted_product_selling_price =0;
         $this->inseted_product_purchase_price =0;
+        
 	}
     public function updatedStoreUser($value)
     {
@@ -59,18 +60,12 @@ class Report extends Component
         $this->inseted_product_purchase_price =0;
         if($this->storeUser == 1)
         {
-            $this->total_purchase = ProductOrder::get();
-            $this->totalOrder = ProductOrderDetails::join('st_product_order', 'st_product_order.order_id', '=', 'st_product_order_details.order_id')
-            ->select('order_date',DB::raw("SUM(st_product_order.subtotal) as 'total_selling_price'"),DB::raw("sum(st_product_order.qty*st_product_order.discount) as 'total_discount'"),DB::raw('sum(st_product_order.qty*st_product_order.purchase_price) AS total_purchase_price'), DB::raw('count(st_product_order.order_id) AS count'))->first();
-            /*$this->total_selling_price = ($this->totalOrder->total_selling_price-$this->totalOrder->total_discount);*/
-            $this->total_selling_price = ProductOrderDetails::sum('total_amount');
-            $this->total_purchase_price = ($this->totalOrder->total_purchase_price);
-            $this->total_profit = ($this->total_selling_price-$this->totalOrder->total_purchase_price);
+            $totalOrder= ProductOrder::select(DB::raw("sum(qty*purchase_price) as 'total_purchasing_price'"), DB::raw("sum(qty*selling_price) as 'total_selling_price'"))->get();
+            $this->total_selling_price = $totalOrder[0]->total_selling_price;
+            $this->total_purchase_price = $totalOrder[0]->total_purchasing_price;
+            $this->total_profit = ($this->total_selling_price-$this->total_purchase_price);
             
-            //$this->products = Product::get();
-           /*  $this->product_selling_price = $this->products->sum('total_selling_price');
-            $this->product_purchase_price = $this->products->sum('total_purchase_price');
-            dd($this->product_selling_price); */
+           
 
             $productQuery = Product::with('productQuantities')->withSum('productQuantities', 'quantity')->withSum('productOrders', 'qty')->withSum('returnProductsQuantity', 'qty')->get();
 
@@ -92,17 +87,10 @@ class Report extends Component
         }
         else
         {
-            //dd('okk');
-            $this->total_purchase = ProductOrder2::get();
-            $this->totalOrder = ProductOrderDetails2::join('st_product_order', 'st_product_order.order_id', '=', 'st_product_order_details.order_id')
-            ->select('order_date',DB::raw("SUM(st_product_order.subtotal) as 'total_selling_price'"),DB::raw("sum(st_product_order.qty*st_product_order.discount) as 'total_discount'"),DB::raw('sum(st_product_order.qty*st_product_order.purchase_price) AS total_purchase_price'), DB::raw('count(st_product_order.order_id) AS count'))->first();
-            $this->total_selling_price = ProductOrderDetails2::sum('total_amount');;
-            $this->total_purchase_price = ($this->totalOrder->total_purchase_price);
-            $this->total_profit = ($this->total_selling_price-$this->totalOrder->total_purchase_price);
-
-            /* $this->products = Product2::get();
-            $this->product_selling_price = $this->products->sum('total_selling_price');
-            $this->product_purchase_price = $this->products->sum('total_purchase_price'); */
+            $totalOrder= ProductOrder2::select(DB::raw("sum(qty*purchase_price) as 'total_purchasing_price'"), DB::raw("sum(qty*selling_price) as 'total_selling_price'"))->get();
+            $this->total_selling_price = $totalOrder[0]->total_selling_price;
+            $this->total_purchase_price = $totalOrder[0]->total_purchasing_price;
+            $this->total_profit = ($this->total_selling_price-$this->total_purchase_price);
 
             $productQuery = Product2::with('productQuantities')->withSum('productQuantities', 'quantity')->withSum('productOrders', 'qty')->withSum('returnProductsQuantity', 'qty')->get();
 
