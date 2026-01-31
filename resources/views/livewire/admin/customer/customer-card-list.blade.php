@@ -15,6 +15,17 @@
                                     <input class="form-control" type="text"  placeholder="Search Card" wire:model="searchCard">
                                 </div>
                             </div>
+
+                            <div class="col-auto">
+								<div class="mb-3">
+									<input class="form-control" type="date" wire:model.lazy="dateForm" placeholder="Date From">
+								</div>
+							</div>
+							<div class="col-auto">
+								<div class="mb-3">
+									<input class="form-control" type="date" wire:model.lazy="dateTo" placeholder="Date From">
+								</div>
+							</div>
                             <div class="col-auto">
                                 <div class="mb-3">
                                     <button type="button" class="btn btn-danger" wire:click="resetSearch">All</button>                                                
@@ -78,8 +89,8 @@
                             <tr>
                                 <td>{{$row->customer_name}}</td>
                                 <td>{{$row->order_date}}</td>
-                                <td>{{$row->membershipsCard?$row->membershipsCard->card_number:''}}</td>
-                                <td>{{$row->membershipsCard?$row->membershipsCard->expiry_date:''}}</td>
+                                <td>{{$row->cardData?$row->cardData->card_number:''}}</td>
+                                <td>{{$row->cardData?$row->cardData->expiry_date:''}}</td>
                                 <td>{{$row->customer_phone}}</td>
                                 <td>
                                     @php
@@ -104,15 +115,16 @@
                             @endforeach
                             @else
                             <tr>
-                            	<td colspan="7" class="align-center">No records available</td>
+                            	<td colspan="7" class="text-center">No records available</td>
                             </tr>
                             @endif
                         </tbody>
                     </table>
                 </div>
-                @if($customers->hasMorePages())
+                {{-- @if($customers->hasMorePages())
                     <button wire:click.prevent="loadMore" class="btn btn-primary">Load more</button>
-                @endif
+                @endif --}}
+                 {{ $customers->links() }}
             </div> <!-- end card-body -->
         </div> <!-- end card -->
     </div><!-- end col -->
@@ -178,7 +190,7 @@
                     <input type="hidden" wire:model.defer="contact">
                     <div class="mb-3 col-md-6">
                         <label class="form-label">Card Number</label>
-                        <input type="text" class="form-control" placeholder="Card Number" wire:model.defer="card_number">
+                        <input type="text" class="form-control" placeholder="Card Number" wire:model.defer="card_number" maxlength="16">
                         @error('card_number') <span class="text-danger error">{{ $message }}</span>@enderror
                     </div>
                     <div class="mb-3 col-md-6">

@@ -18,7 +18,7 @@ class Product2 extends Model
     {
         $this->attributes['name'] = Str::ucfirst($name);
     }
-    protected $appends = [
+    /* protected $appends = [
         'total_purchase_price', 'total_selling_price',
     ];
 
@@ -29,7 +29,7 @@ class Product2 extends Model
     public function getTotalSellingPriceAttribute()
     {
         return $this->selling_price * $this->quantity;
-    } 
+    }  */
 
 	public function gallery()
 	{
@@ -45,6 +45,10 @@ class Product2 extends Model
 	{
 		return $this->hasMany(ProductOrder2::class, 'product_id');
 	}
+	public function productOrdersByDesc()
+	{
+		return $this->hasMany(ProductOrder2::class, 'product_id')->orderBy('id', 'desc');
+	}
 
 	public function cart()
 	{
@@ -58,7 +62,8 @@ class Product2 extends Model
 
 	public function returnProductsQuantity()
 	{
-		return $this->hasMany(ReturnProduct2::class,'product_id')->where('status','active');
+		return $this->hasMany(ReturnProduct2::class,'product_id');
+		/* return $this->hasMany(ReturnProduct2::class,'product_id')->where('status','active'); */
 	}
 
 	public function productReductions()

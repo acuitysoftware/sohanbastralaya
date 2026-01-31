@@ -102,8 +102,11 @@
                         <tbody>
                         	@if(count($products)>0)
                         	@foreach($products as $key=>$row)
-                            <tr>
-                                <td>{{$key+1}}</td>
+                           @php
+                                    $item = ($products->perPage() * ($products->currentPage() - 1)) + ($key+ 1);
+                                 @endphp
+                                    <tr>
+                                        <td>{{ $item }}</td>
                                 <td>
                                     @if(isset($row->gallery))
                                     <a data-fancybox="gallery" href="{{asset('storage/app/public/product_image/'.$row->gallery->gallery_image) }}">
@@ -126,15 +129,16 @@
                             @endforeach
                             @else
                             <tr>
-                            	<td colspan="7" class="align-center">No records available</td>
+                            	<td colspan="7" class="text-center">No records available</td>
                             </tr>
                             @endif
                         </tbody>
                     </table>
                 </div>
-                @if($products->hasMorePages())
+               {{--  @if($products->hasMorePages())
                     <button wire:click.prevent="loadMore" class="btn btn-primary">Load more</button>
-                @endif
+                @endif --}}
+                 {{ $products->links() }}
             </div> <!-- end card-body -->
         </div> <!-- end card -->
     </div><!-- end col -->

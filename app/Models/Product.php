@@ -45,6 +45,10 @@ class Product extends Model
 	{
 		return $this->hasMany(ProductOrder::class);
 	}
+	public function productOrdersByDesc()
+	{
+		return $this->hasMany(ProductOrder::class)->orderBy('id', 'desc');
+	}
 
 	public function cart()
 	{
@@ -58,7 +62,8 @@ class Product extends Model
 
 	public function returnProductsQuantity()
 	{
-		return $this->hasMany(ReturnProduct::class)->where('status','active');
+		return $this->hasMany(ReturnProduct::class);
+		/* return $this->hasMany(ReturnProduct::class)->where('status','active'); */
 	}
 
 	public function productReductions()

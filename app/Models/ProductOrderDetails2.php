@@ -37,6 +37,11 @@ class ProductOrderDetails2 extends Model
 		return $this->hasOne(ProductOrder2::class, 'order_id', 'order_id');
 	}
 
+	public function cardData()
+	{
+		return $this->hasOne(Membership2::class, 'contact', 'customer_phone')->orderBy('id', 'desc');
+	}
+
 	public function card()
 	{
 		return $this->hasOne(Membership2::class, 'order_id', 'order_id');

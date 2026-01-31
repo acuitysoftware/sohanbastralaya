@@ -286,7 +286,8 @@ class ProductCart extends Component
             if($customer)
             {
                 $total_debit_point =0;
-                $membership_card = Membership::where('contact',$data)->where('card_status', 'Y')->where('add_date','<=', $today)->where('expiry_date','>=', $today)->orderBy('id', 'desc')->first();
+                $membership_card = Membership::where('contact',$data)->where('card_status', 'Y')->orderBy('id', 'desc')->first();
+                /* $membership_card = Membership::where('contact',$data)->where('card_status', 'Y')->where('add_date','<=', $today)->where('expiry_date','>=', $today)->orderBy('id', 'desc')->first(); */
                 $credit_points = Membership::where('contact',$data)->where('card_status', 'Y')->where('add_date','<=', $today)->where('expiry_date','>=', $today)->sum('credit_points');
                 $total_debit_point = Membership::where('contact',$data)->where('card_status', 'Y')->where('add_date','<=', $today)->where('expiry_date','>=', $today)->sum('debit_point');
                 $this->customer_names = [];
@@ -314,7 +315,7 @@ class ProductCart extends Component
             if($customer)
             {
                 $total_debit_point =0;
-                $membership_card = Membership2::where('contact',$data)->where('card_status', 'Y')->where('add_date','<=', $today)->where('expiry_date','>=', $today)->orderBy('id', 'desc')->first();
+                $membership_card = Membership2::where('contact',$data)->where('card_status', 'Y')->orderBy('id', 'desc')->first();
                 $credit_points = Membership2::where('contact',$data)->where('card_status', 'Y')->where('add_date','<=', $today)->where('expiry_date','>=', $today)->sum('credit_points');
                 $total_debit_point = Membership2::where('contact',$data)->where('card_status', 'Y')->where('add_date','<=', $today)->where('expiry_date','>=', $today)->sum('debit_point');
                 $this->customer_names = [];
@@ -709,7 +710,7 @@ class ProductCart extends Component
                 $today = date('Y-m-d');
                 $old_membership = Membership::where('contact',$this->customer_phone)->where('card_status', 'Y')->where('add_date','<=', $today)->where('expiry_date','>=', $today)->orderBy('id', 'asc')->first();
                 $credit_point = 0;
-                if($this->card_number)
+                /* if($this->card_number)
                 {
                    $credit_point = (($this->setting->target_points*$this->total_amount)/100);
                    if($old_membership)
@@ -719,8 +720,11 @@ class ProductCart extends Component
                    {
                         $expiry_date = date('Y-m-d',strtotime($today . " + ". $this->setting->expire_days ." day"));
                    }
-                }
+                } */
 
+                $credit_point = (($this->setting->target_points*$this->total_amount)/100);
+                $expiry_date = date('Y-m-d',strtotime($today . " + ". $this->setting->expire_days ." day"));
+               
 
                 Membership::create([
                    'order_id' => $order_id,
@@ -802,7 +806,7 @@ class ProductCart extends Component
                 $today = date('Y-m-d');
                 $old_membership = Membership2::where('contact',$this->customer_phone)->where('card_status', 'Y')->where('add_date','<=', $today)->where('expiry_date','>=', $today)->orderBy('id', 'asc')->first();
                 $credit_point = 0;
-                if($this->card_number)
+                /* if($this->card_number)
                 {
                    $credit_point = (($this->setting->target_points*$this->total_amount)/100);
                    if($old_membership)
@@ -812,8 +816,10 @@ class ProductCart extends Component
                    {
                         $expiry_date = date('Y-m-d',strtotime($today . " + ". $this->setting->expire_days ." day"));
                    }
-                }
+                } */
 
+                $credit_point = (($this->setting->target_points*$this->total_amount)/100);
+                $expiry_date = date('Y-m-d',strtotime($today . " + ". $this->setting->expire_days ." day"));
 
                 Membership2::create([
                    'order_id' => $order_id,

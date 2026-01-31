@@ -77,7 +77,7 @@
                             @endforeach
                             @else
                             <tr>
-                            	<td colspan="9" class="align-center">No records available</td>
+                            	<td colspan="9" class="text-center">No records available</td>
                             </tr>
                             @endif
                         </tbody>
@@ -234,7 +234,7 @@
         <div class="modal-content">
             <div class="modal-header modal-colored-header bg-primary">
                 <h4 class="modal-title" id="primary-header-modalLabel">Order Details</h4>
-                <button type="button" class="btn-close modalClose" data-bs-dismiss="modal" aria-hidden="true"></button>
+                <button type="button" class="btn-close" onclick="closeCart();" aria-hidden="true"></button>
             </div>
             <div class="modal-body">
                 <div class="row ">
@@ -243,7 +243,7 @@
                             <div class="col-auto">
                                 <div class="mb-3">
                                     <button type="button" onclick="PrintDiv()" class="btn btn-primary">Print Details</button>                                                
-                                    <button type="button" data-bs-dismiss="modal"  class="btn btn-danger modalClose" >Cancel</button> 
+                                    <button type="button" onclick="closeCart();"  class="btn btn-danger" >Cancel</button> 
                                 </div>
                             </div>
                         </div>
@@ -465,6 +465,10 @@
   </a>
 
 <script type="text/javascript">
+    function closeCart() {
+        window.location = "{{route('product_index')}}";
+
+    }
     function PrintDiv() {
     var divToPrint = document.getElementById('print_data');
     var popupWin = window.open('', '_blank', 'width=900,height=650');

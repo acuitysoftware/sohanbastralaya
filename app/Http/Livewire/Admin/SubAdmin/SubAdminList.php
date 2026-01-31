@@ -18,17 +18,11 @@ class SubAdminList extends Component
     use WithSorting;
     use AlertMessage;
     public  $state=[], $type='edit', $deleteIds=[], $permissions, $editUser, $meneList=[], $subMenuList=[], $userMenuList, $userSubMenuList, $user_id, $store;
-
+    protected $paginationTheme = 'bootstrap';
 	protected $listeners = ['deleteConfirm', 'changeStatus','deleteConfirmUsers'];
 	public function mount()
     {
-        $this->perPageList = [
-            ['value' => 5, 'text' => "5"],
-            ['value' => 10, 'text' => "10"],
-            ['value' => 20, 'text' => "20"],
-            ['value' => 50, 'text' => "50"],
-            ['value' => 100, 'text' => "100"]
-        ];
+      
         $this->permissions = Permission::where('parent_id', 0)->get();
     }
     public function getRandomColor()
@@ -359,7 +353,12 @@ class SubAdminList extends Component
 
     public function deleteMultiUser()
     {
-    	$this->showConfirmation("warning", 'Are you sure?', "You won't be able to recover this Sub Admins!", 'Yes, delete!', 'deleteConfirmUsers', ['id' => $this->deleteIds]);
+        if(count($this->deleteIds) == "0"){
+             $this->showToastr('error', 'Please select user', false);
+        }else{
+
+            $this->showConfirmation("warning", 'Are you sure?', "You won't be able to recover this Sub Admins!", 'Yes, delete!', 'deleteConfirmUsers', ['id' => $this->deleteIds]);
+        }
     }
 
     public function deleteConfirmUsers($ids)

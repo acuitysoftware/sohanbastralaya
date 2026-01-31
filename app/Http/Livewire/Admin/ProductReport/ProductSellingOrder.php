@@ -17,11 +17,13 @@ use App\Http\Livewire\Traits\AlertMessage;
 
 class ProductSellingOrder extends Component
 {
-	public $perPage, $orderList=[],$product, $dateForm, $dateTo,$storeUser;
+    use WithPagination;
+	public $perPage, $orderList=[],$product, $dateForm, $dateTo,$storeUser,$searchName;
     protected $listeners = ['loadMore'];
+    protected $paginationTheme = 'bootstrap';
 	public function mount()
 	{
-		$this->perPage =200; 
+		$this->perPage = env('PER_PAGE', 50); 
         if(Auth::user()->type=='A')
         {
             $this->storeUser = 1;
@@ -43,7 +45,7 @@ class ProductSellingOrder extends Component
 
 	public function loadMore()
     {
-        $this->perPage= $this->perPage+200;
+        $this->perPage= $this->perPage+env('PER_PAGE', 50);
     }
 
     public function resetSearch()
@@ -54,27 +56,45 @@ class ProductSellingOrder extends Component
 
     public function render()
     {
-        if($this->storeUser == 1)
-        	$productQuery = Product::withCount('productOrders')->having('product_orders_count', '>', 0)->withSum('productOrders', 'qty');
+        if($this->storeUser == 1){
+
+            $productQuery = DB::table('st_product')->join('st_product_order', 'st_product_order.product_id', '=', 'st_product.id')->join('st_product_order_details', 'st_product_order_details.order_id', '=', 'st_product_order.order_id')->select('st_product.id','st_product.name', 'st_product.product_code', 'st_product_order.selling_price', DB::raw("sum(st_product_order.qty) as product_orders_sum_qty"))->groupBy('st_product.name');
+        	//$productQuery = Product::withCount('productOrders')->having('product_orders_count', '>', 0)->withSum('productOrders', 'qty');
+            //dd($productQuery->limit(50)->get());
+        }
         else
-            $productQuery = Product2::withCount('productOrders')->having('product_orders_count', '>', 0)->withSum('productOrders', 'qty');
+            /* $productQuery = Product2::withCount('productOrders')->having('product_orders_count', '>', 0)->withSum('productOrders', 'qty'); */
+            $productQuery = Product2::join('st_product_order', 'st_product_order.product_id', '=', 'st_product.id')->join('st_product_order_details', 'st_product_order_details.order_id', '=', 'st_product_order.order_id')->select('st_product.id','st_product.name', 'st_product.product_code', 'st_product_order.selling_price', DB::raw("sum(st_product_order.qty) as product_orders_sum_qty"))->groupBy('st_product.name');
+
+        if ($this->searchName)
+        {
+            $nam = $this->searchName;
+           $productQuery = $productQuery->where(function($q) use($nam){
+            $q->where('st_product.name', 'like', '%' . $nam . '%')->orWhere('st_product.product_code', 'like', '%' . $nam . '%');
+           });
+           
+        }
         
     	if ($this->dateForm && $this->dateTo)
     	{
     		$date['form_date'] = $this->dateForm;
     		$date['to_date'] = $this->dateTo;
-           $productQuery = $productQuery->whereBetween('post_date',[$date['form_date'],$date['to_date']]);
+           $productQuery = $productQuery->whereBetween('st_product_order_details.order_date',[$date['form_date'],$date['to_date']]);
     	}
         if($this->dateForm)
         {
             $date['form_date'] = $this->dateForm;
-            $productQuery = $productQuery->where(DB::raw("DATE(post_date)"),'>=',date('Y-m-d',strtotime($date['form_date'])));
+            $productQuery = $productQuery->where(DB::raw("DATE(st_product_order_details.order_date)"),'>=',date('Y-m-d',strtotime($date['form_date'])));
         }
         if($this->dateTo)
         {
             $date['to_date'] = $this->dateTo;
-            $productQuery = $productQuery->where(DB::raw("DATE(post_date)"),'<=',date('Y-m-d',strtotime($date['to_date'])));
+            $productQuery = $productQuery->where(DB::raw("DATE(st_product_order_details.order_date)"),'<=',date('Y-m-d',strtotime($date['to_date'])));
         }
+      // dd($productQuery->take(50)->get());
+        /* return view('livewire.admin.product-report.product-selling-order', [
+            'products' => $productQuery->orderBy('product_orders_sum_qty', 'desc')->paginate($this->perPage)
+        ]); */
         return view('livewire.admin.product-report.product-selling-order', [
             'products' => $productQuery->orderBy('product_orders_sum_qty', 'desc')->paginate($this->perPage)
         ]);

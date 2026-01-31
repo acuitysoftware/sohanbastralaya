@@ -27,15 +27,16 @@ class OrderList extends Component
 
     use WithPagination;
     use AlertMessage;
-    public $searchName, $dateForm, $dateTo, $viewOrder, $product_name, $total_profit, $product_code, $product_qty, $product_selling_price, $return_order_id,$perPage, $total_purchase, $returnOrder, $setting, $storeUser;
+    public $searchName, $dateForm, $dateTo, $viewOrder, $product_name, $total_profit, $product_code, $product_qty, $product_selling_price, $return_order_id,$perPage, $total_purchase, $returnOrder, $setting, $storeUser, $user;
     protected $listeners = ['deleteConfirm','loadMore'];
-
+protected $paginationTheme = 'bootstrap';
     public function mount()
     {
-        $this->perPage =200;
+        $this->perPage =env('PER_PAGE', 50);
         $this->dateForm =date('Y-m-d');
         $this->dateTo =date('Y-m-d');
         $this->setting = Setting::first();
+        $this->user = Auth::user();
         if(Auth::user()->type=='A')
         {
             $this->storeUser = 1;
@@ -57,7 +58,7 @@ class OrderList extends Component
     }
     public function loadMore()
     {
-        $this->perPage= $this->perPage+200;
+        $this->perPage= $this->perPage+env('PER_PAGE', 50);
     }
     
     public function resetSearch()
@@ -135,13 +136,13 @@ class OrderList extends Component
                 {
                     $perctge_amt = $order->customer->perctge_amt-($order->discount*$this->product_qty);
                 }
-                /*$order->customer()->update([
+                $order->customer()->update([
                     'subtotal' => ($order->customer->subtotal-($order->selling_price*$this->product_qty)),
                     'discount_amt' => $discount_amt,
                     'perctge_amt' => $perctge_amt,
                     'total_amount' => ($order->customer->total_amount-(($order->selling_price-$order->discount)*$this->product_qty)),
 
-                ]);*/
+                ]);
                 $order->delete();
 
             }
@@ -197,13 +198,13 @@ class OrderList extends Component
                 {
                     $perctge_amt = $order->customer->perctge_amt-($order->discount*$this->product_qty);
                 }
-                /*$order->customer()->update([
+                $order->customer()->update([
                     'subtotal' => ($order->customer->subtotal-($order->selling_price*$this->product_qty)),
                     'discount_amt' => $discount_amt,
                     'perctge_amt' => $perctge_amt,
                     'total_amount' => ($order->customer->total_amount-(($order->selling_price-$order->discount)*$this->product_qty)),
 
-                ]);*/
+                ]);
             }
             $this->showToastr("success",'Product retured successfully');
             return redirect()->route('order_list');
@@ -273,7 +274,7 @@ class OrderList extends Component
         return view('livewire.admin.order.order-list', [
             'orders' => $orderQuery
                 ->orderBy('id', 'desc')
-                ->get()
+                ->paginate($this->perPage)
         ]);
     }
     public function deleteAttempt($id)
@@ -284,13 +285,19 @@ class OrderList extends Component
     public function deleteConfirm($id)
     {
         if($this->storeUser == 1)
-            $deleteOrder = ProductOrderDetails::find($id['id']);
+            $deleteOrder = ProductOrderDetails::with('productDetails')->find($id['id']);
         else
-            $deleteOrder = ProductOrderDetails2::find($id['id']);
+            $deleteOrder = ProductOrderDetails2::with('productDetails')->find($id['id']);
 
         if(count($deleteOrder->productDetails))
         {
             foreach ($deleteOrder->productDetails as $key => $value) {
+                $product = Product::find($value->product_id);
+                if($product){
+                    $product->update([
+                        'quantity' => ($product->quantity+$value->qty),
+                    ]);
+                }
                 $value->delete();
             }
         }

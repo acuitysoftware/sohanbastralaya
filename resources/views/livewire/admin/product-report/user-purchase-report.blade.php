@@ -97,8 +97,11 @@
 						<tbody>
 							@if(count($reports)>0)
                         	@foreach($reports as $key=>$row)
-							<tr>
-								<td>{{$key+1}}</td>
+							@php
+                                    $item = ($reports->perPage() * ($reports->currentPage() - 1)) + ($key+ 1);
+                                 @endphp
+                                    <tr>
+                                        <td>{{ $item }}</td>
 								<td>{{$row->note}}</td>
 								<td>{{$row->date}}</td>
 								<td>{{$row->purchase_price}}</td>
@@ -110,16 +113,16 @@
 							@endforeach
                             @else
                             <tr>
-                            	<td colspan="5" class="align-center">No records available</td>
+                            	<td colspan="5" class="text-center">No records available</td>
                             </tr>
                             @endif
 						</tbody>
 					</table>
 				</div>
-				@if($reports->hasMorePages())
+				{{-- @if($reports->hasMorePages())
                     <button wire:click.prevent="loadMore" class="btn btn-primary">Load more</button>
-                @endif
-
+                @endif --}}
+				 {{ $reports->links() }}
 
 				<div class="table-responsive">
 					<div class="d-flex align-items-center justify-content-end">

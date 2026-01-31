@@ -34,10 +34,11 @@ class CustomerView extends Component
     public $card_details, $total_credit_points, $perPage, $returnOrder, $setting,$memberships=[];
     public $searchName, $customer_details =[], $orderDetails, $viewOrder=[], $expiry_date_count, $storeUser, $contact;
 	protected $listeners = ['viewCustomer', 'loadMore', 'customerDetails'];
+    protected $paginationTheme = 'bootstrap';
 	public function mount($contact)
 	{
 		$this->contact = $contact;
-		$this->perPage =200;
+		$this->perPage =env('PER_PAGE', 50);
         $this->setting = Setting::first();
         if(Auth::user()->type=='A')
         {
@@ -57,7 +58,7 @@ class CustomerView extends Component
 
 	public function loadMore()
     {
-        $this->perPage= $this->perPage+200;
+        $this->perPage= $this->perPage+env('PER_PAGE', 50);
     }
     public function render()
     {

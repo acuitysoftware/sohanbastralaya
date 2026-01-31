@@ -9,8 +9,13 @@ class SiteSettingController extends Controller
 {
     public function dashboard()
     {
+    	$data['title'] = 'Dashboard';
+    	return view('pages.dashboard', $data);
+    }
+    public function siteSettings()
+    {
     	$data['title'] = 'Site Settings';
-    	return view('pages.site_setting.dashboard', $data);
+    	return view('pages.site_setting.site-settings', $data);
     }
 
     public function changePassword()

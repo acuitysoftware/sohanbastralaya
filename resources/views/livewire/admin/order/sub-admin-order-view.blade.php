@@ -140,7 +140,7 @@
                             @endforeach
                             @else
                             <tr>
-                            	<td colspan="10" class="align-center">No records available</td>
+                            	<td colspan="10" class="text-center">No records available</td>
                             </tr>
                             @endif
                             @php
@@ -158,7 +158,7 @@
                         </tbody>
                     </table>
                 </div>
-                
+                 {{ $orders->links() }}
             </div> <!-- end card-body -->
         </div> <!-- end card -->
     </div><!-- end col -->

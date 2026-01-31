@@ -1,12 +1,59 @@
 <div class="row">
 	<div class="col-12">
 		<div class="card">
+            @php
+                    function convert_numbers_to_indian_format($number)
+                    {
+                        $formattedAmount = number_format($number);
+                        $decimal = (string) ($number - floor($number));
+                        $money = floor($number);
+                        $length = strlen($money);
+                        $delimiter = '';
+                        $money = strrev($money);
+                        for ($i = 0; $i < $length; $i++) {
+                            if (($i == 3 || ($i > 3 && ($i - 1) % 2 == 0)) && $i != $length) {
+                                $delimiter .= ',';
+                            }
+                            $delimiter .= $money[$i];
+                        }
+
+                        $formattedAmount = strrev($delimiter);
+                        $decimal = preg_replace('/0\./i', '.', $decimal);
+                        $decimal = substr($decimal, 0, 3);
+
+                        if ($decimal != '0') {
+                            $formattedAmount = $formattedAmount . $decimal;
+                        } else {
+                            $formattedAmount = $formattedAmount . '.00';
+                        }
+                        return $formattedAmount;
+                    }
+                @endphp
 			<div class="card-body">
 
 
 				<div class="row mb-2">
 					<div class="col-xl-9">
+						<div class="row gy-2 gx-2 align-items-center justify-content-xl-start justify-content-between">
+							<div class="col-auto">
+								<div class="mb-3">
+									<input class="form-control" type="date" wire:model="dateForm" placeholder="Date From">
+								</div>
+							</div>
+							<div class="col-auto">
+								<div class="mb-3">
+									<input class="form-control" type="date" wire:model="dateTo" placeholder="Date From">
+								</div>
+							</div>
+							
+							<div class="col-auto">
+								<div class="mb-3">
+									<button type="button" class="btn btn-danger" wire:click="resetSearch">All</button>                                                
+								</div>
+							</div>
 
+
+						</div>
 					</div>
 					@if(Auth::user()->type=='A')
                     <div class="col-xl-3">
@@ -55,8 +102,16 @@
 
 						</thead>
 						<tbody>
+                            @php
+                                $total_sell_price =0;
+                                $total_purchase_price =0;
+                            @endphp
 							@if(count($orders)>0)
                         	@foreach($orders as $key=>$row)
+                            @php
+                                $total_sell_price+=(float)$row->total_selling_price;
+                                $total_purchase_price+=(float)$row->total_purchase_price;
+                            @endphp
 							<tr>
 								<td>{{$row->date}}</td>
 								<td>{{$row->total_selling_price}}</td>
@@ -66,17 +121,26 @@
 								<td style="white-space: nowrap;"><a href="javascript:void(0);" class="action-icon"  wire:click="viewOrders('{{$row->date}}')"><i class="mdi mdi-eye"></i>View</a></td>
 							</tr>
 							@endforeach
+                            <tr>
+                                <td>Total</td>
+                                <td>{{convert_numbers_to_indian_format($total_sell_price)}}</td>
+                                @if(Auth::user()->type=='A')
+                                <td>{{convert_numbers_to_indian_format($total_purchase_price)}}</td>
+                                @endif
+                                 <td></td>
+                            </tr>
                             @else
                             <tr>
-                            	<td colspan="4" class="align-center">No records available</td>
+                            	<td colspan="4" class="text-center">No records available</td>
                             </tr>
                             @endif
 						</tbody>
 					</table>
 				</div>
-				@if($orders->hasMorePages())
+				{{-- @if($orders->hasMorePages())
                     <button wire:click.prevent="loadMore" class="btn btn-primary">Load more</button>
-                @endif
+                @endif --}}
+                 {{ $orders->links() }}
 			</div> <!-- end card-body -->
 		</div> <!-- end card -->
 	</div><!-- end col -->

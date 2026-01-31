@@ -27,6 +27,7 @@ class SubAdminOrder extends Component
     use AlertMessage;
     public $dateForm, $dateTo, $orders=[];
     public $total_selling, $total_purchase, $total_purchase_price, $total_discount, $discount_percentage, $profit_percentage, $total_profit, $storeUser;
+    protected $paginationTheme = 'bootstrap';
     public function mount()
     {
         
@@ -43,6 +44,8 @@ class SubAdminOrder extends Component
 
             $this->storeUser = Auth::user()->store;
         }
+
+        
         
         
     }
@@ -151,18 +154,59 @@ class SubAdminOrder extends Component
 
     public function render()
     {
-        
+        $users =[];
         if ($this->storeUser == '1')
         {
-        	$userQuery = User::where('store', 1)->where(['type'=> 'S', 'status' =>1])->with('orders')->withCount('orders')->having('orders_count', '>', 0);
+            $user_ids = ProductOrder::select('billing_user')->groupBy('billing_user')->get();
+            $ids =[];
+            if(count($user_ids)){
+                foreach($user_ids as $key=>$id){
+                    $ids[] = $id->billing_user;
+                }
+            }
+        	$items = User::whereIn('id', $ids)->where('store', 1)->where(['type'=> 'S', 'status' =>1])->get();
+            
+            if(count($items)){
+                foreach($items as $key=>$item){
+                   $da = new \stdClass();
+                    $totalOrder= ProductOrder::select('purchase_price', 'selling_price', DB::raw("sum(subtotal) as 'order_total'"), DB::raw("sum(qty*selling_price) as 'total_selling_price'"), 'billing_user',DB::raw("sum(qty*purchase_price) as 'total_purchasing_price'"))->where('billing_user', $item->id)->first();
+                    $da->order_total = $totalOrder->order_total;
+                    $da->total_selling_price = $totalOrder->total_selling_price;
+                    $da->total_purchasing_price = $totalOrder->total_purchasing_price;
+                    $da->total_profit = ((float)$totalOrder->total_selling_price-(float)$totalOrder->total_purchasing_price); 
+                    $da->name = $item->name;
+                    $da->id = $item->id;
+                    array_push($users, $da);
+                }
+            }
         }
         else{
-            $userQuery = User::where('store', $this->storeUser)->where(['type'=> 'S', 'status' =>1])->with('orders_new_db')->withCount('orders_new_db')->having('orders_new_db_count', '>', 0);
+            $user_ids = ProductOrder2::select('billing_user')->groupBy('billing_user')->get();
+            $ids =[];
+            if(count($user_ids)){
+                foreach($user_ids as $key=>$id){
+                    $ids[] = $id->billing_user;
+                }
+            }
+        	$items = User::whereIn('id', $ids)->where('store', 1)->where(['type'=> 'S', 'status' =>1])->get();
+            
+            if(count($items)){
+                foreach($items as $key=>$item){
+                   $da = new \stdClass();
+                    $totalOrder= ProductOrder2::select('purchase_price', 'selling_price', DB::raw("sum(subtotal) as 'order_total'"), DB::raw("sum(qty*selling_price) as 'total_selling_price'"), 'billing_user',DB::raw("sum(qty*purchase_price) as 'total_purchasing_price'"))->where('billing_user', $item->id)->first();
+                    $da->order_total = $totalOrder->order_total;
+                    $da->total_selling_price = $totalOrder->total_selling_price;
+                    $da->total_purchasing_price = $totalOrder->total_purchasing_price;
+                    $da->total_profit = ((float)$totalOrder->total_selling_price-(float)$totalOrder->total_purchasing_price); 
+                    $da->name = $item->name;
+                    $da->id = $item->id;
+                    array_push($users, $da);
+                }
+            }
 
         }
-        //dd($userQuery->get());
     	return view('livewire.admin.order.sub-admin-order', [
-            'users' => $userQuery->get()
+            'users' => $users
             ]);
     }
 }

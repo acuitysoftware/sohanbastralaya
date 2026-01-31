@@ -60,53 +60,39 @@ class Report extends Component
         $this->inseted_product_purchase_price =0;
         if($this->storeUser == 1)
         {
-            $totalOrder= ProductOrder::select(DB::raw("sum(qty*purchase_price) as 'total_purchasing_price'"), DB::raw("sum(qty*selling_price) as 'total_selling_price'"))->get();
-            $this->total_selling_price = $totalOrder[0]->total_selling_price;
-            $this->total_purchase_price = $totalOrder[0]->total_purchasing_price;
-            $this->total_profit = ($this->total_selling_price-$this->total_purchase_price);
+            $totalOrder= ProductOrder::select(DB::raw("sum(qty*purchase_price) as 'total_purchasing_price'"), DB::raw("sum(subtotal) as 'total_subtotal'"),DB::raw('sum(qty*discount) AS total_discount_amount'))->first();
+            $total_discount = $totalOrder->total_discount_amount;
+            $this->total_selling_price = ((float)$totalOrder->total_subtotal-(float)$total_discount);
+            $this->total_purchase_price = $totalOrder->total_purchasing_price;
+            $this->total_profit = (((float)$this->total_selling_price-(float)$this->total_purchase_price));
+
+            $productData= Product::select(DB::raw("sum(quantity*purchase_price) as 'total_purchasing_price'"), DB::raw("sum(quantity*selling_price) as 'total_sell_price'"))->first();
+            $this->product_selling_price = $productData->total_sell_price;
+            $this->product_purchase_price = $productData->total_purchasing_price;
+            /* dump(  $this->product_selling_price);
+            dd( $productData); */
             
+            $insertedData = Product::join('st_product_quantity', 'st_product_quantity.product_id', '=', 'st_product.id')->select(DB::raw("sum(st_product_quantity.quantity*st_product.selling_price) as inseted_selling_price"), DB::raw("sum(st_product_quantity.quantity*st_product.purchase_price) as inseted_purchase_price"))->get();
+             $this->inseted_product_selling_price = $insertedData[0]->inseted_selling_price; 
+            $this->inseted_product_purchase_price = $insertedData[0]->inseted_purchase_price;
+
            
-
-            $productQuery = Product::with('productQuantities')->withSum('productQuantities', 'quantity')->withSum('productOrders', 'qty')->withSum('returnProductsQuantity', 'qty')->get();
-
-            if(count($productQuery))
-            {
-                foreach ($productQuery as $key => $value) {
-                    $avl_qty =0;
-                    $avl_qty = $value->product_quantities_sum_quantity-($value->return_products_quantity_sum_qty+$value->product_orders_sum_qty+$value->product_reductions_sum_qty);
-
-                    /* $this->inseted_product_purchase_price+=$value->purchase_price*$value->product_quantities_sum_quantity; 
-                    $this->inseted_product_selling_price+=$value->selling_price*$value->product_quantities_sum_quantity;  */
-
-                    $this->product_selling_price+= ($value->selling_price*$avl_qty);
-                    $this->product_purchase_price+= ($value->purchase_price*$avl_qty);
-                }
-            }
-            $this->inseted_product_selling_price = (float)$this->total_selling_price+(float)$this->product_selling_price; 
-            $this->inseted_product_purchase_price = (float)$this->total_purchase_price+(float)$this->product_purchase_price;
         }
         else
         {
-            $totalOrder= ProductOrder2::select(DB::raw("sum(qty*purchase_price) as 'total_purchasing_price'"), DB::raw("sum(qty*selling_price) as 'total_selling_price'"))->get();
-            $this->total_selling_price = $totalOrder[0]->total_selling_price;
-            $this->total_purchase_price = $totalOrder[0]->total_purchasing_price;
-            $this->total_profit = ($this->total_selling_price-$this->total_purchase_price);
+           $totalOrder= ProductOrder2::select(DB::raw("sum(qty*purchase_price) as 'total_purchasing_price'"), DB::raw("sum(subtotal) as 'total_subtotal'"),DB::raw('sum(qty*discount) AS total_discount_amount'))->first();
+            $total_discount = $totalOrder->total_discount_amount;
+            $this->total_selling_price = ((float)$totalOrder->total_subtotal-(float)$total_discount);
+            $this->total_purchase_price = $totalOrder->total_purchasing_price;
+            $this->total_profit = (((float)$this->total_selling_price-(float)$this->total_purchase_price));
 
-            $productQuery = Product2::with('productQuantities')->withSum('productQuantities', 'quantity')->withSum('productOrders', 'qty')->withSum('returnProductsQuantity', 'qty')->get();
-
-            if(count($productQuery))
-            {
-                foreach ($productQuery as $key => $value) {
-                    $avl_qty =0;
-                    $avl_qty = $value->product_quantities_sum_quantity-($value->return_products_quantity_sum_qty+$value->product_orders_sum_qty+$value->product_reductions_sum_qty);
-                    /* $this->inseted_product_purchase_price+=$value->purchase_price*$value->product_quantities_sum_quantity; 
-                    $this->inseted_product_selling_price+=$value->selling_price*$value->product_quantities_sum_quantity; */ 
-                    $this->product_selling_price+= ($value->selling_price*$avl_qty);
-                    $this->product_purchase_price+= ($value->purchase_price*$avl_qty);
-                }
-            }
-            $this->inseted_product_selling_price = (float)$this->total_selling_price+(float)$this->product_selling_price; 
-            $this->inseted_product_purchase_price = (float)$this->total_purchase_price+(float)$this->product_purchase_price; 
+            $productData= Product2::select(DB::raw("sum(quantity*purchase_price) as 'total_purchasing_price'"), DB::raw("sum(quantity*selling_price) as 'total_sell_price'"))->get();
+            $this->product_selling_price = $productData[0]->total_sell_price;
+            $this->product_purchase_price = $productData[0]->total_purchasing_price;
+            
+            $insertedData = Product2::join('st_product_quantity', 'st_product_quantity.product_id', '=', 'st_product.id')->select(DB::raw("sum(st_product_quantity.quantity*st_product.selling_price) as inseted_selling_price"), DB::raw("sum(st_product_quantity.quantity*st_product.purchase_price) as inseted_purchase_price"))->get();
+             $this->inseted_product_selling_price = $insertedData[0]->inseted_selling_price; 
+            $this->inseted_product_purchase_price = $insertedData[0]->inseted_purchase_price; 
         }
 
         

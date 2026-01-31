@@ -58,6 +58,9 @@ window.addEventListener('show-stock-inserted', event => {
 window.addEventListener('show-edit-purchase-report', event => {
             $('#editPurchaseReport').modal('show');
         });
+window.addEventListener('show-customer-details', event => {
+            $('#showCustomerDetails').modal('show');
+        });
 
 
     //Advertisements//

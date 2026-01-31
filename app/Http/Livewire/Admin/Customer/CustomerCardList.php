@@ -2,6 +2,7 @@
 
 namespace App\Http\Livewire\Admin\Customer;
 
+use DB;
 use Hash;
 use Auth;
 use Session;
@@ -26,11 +27,12 @@ class CustomerCardList extends Component
     use WithSorting;
     use AlertMessage;
     public  $state=[], $type='edit', $deleteIds=[];
-    public $perPage,$searchName, $searchPhone, $searchCard, $memberships=[], $membership, $contact_no, $card_number, $contact,$total_credit_points, $expiry_date_count, $storeUser;
+    public $perPage,$searchName, $searchPhone, $searchCard, $memberships=[], $membership, $contact_no, $card_number, $contact,$total_credit_points, $expiry_date_count, $storeUser,$dateForm, $dateTo;
     protected $listeners = ['loadMore'];
+    protected $paginationTheme = 'bootstrap';
 	public function mount()
     {
-        $this->perPage =200;
+        $this->perPage = env('PER_PAGE', '50');
         if(Auth::user()->type=='A')
         {
             $this->storeUser = 1;
@@ -51,7 +53,7 @@ class CustomerCardList extends Component
     }
     public function loadMore()
     {
-        $this->perPage= $this->perPage+200;
+        $this->perPage= $this->perPage+env('PER_PAGE', '50');
     }
     
 	public function updatingPerPage()
@@ -67,6 +69,8 @@ class CustomerCardList extends Component
     {
        $this->searchPhone = null;
        $this->searchCard = null;
+       $this->dateForm = null;
+       $this->dateTo = null;
     }
     public function viewmemberships($value)
     {
@@ -122,13 +126,28 @@ class CustomerCardList extends Component
             'contact_no'=>'required|integer|digits:10',
             'card_number'=>'required|integer|digits:16',
         ]);
-        if($this->storeUser == 1)
-            $data = ProductOrderDetails::where('customer_phone',$this->contact)->orderBy('id', 'desc')->first();
-        else
-            $data = ProductOrderDetails2::where('customer_phone',$this->contact)->orderBy('id', 'desc')->first();
+        if($this->storeUser == 1){
 
-        $data->update(['customer_phone' => $this->contact_no,'card_number' =>$this->card_number]);
-        $data->membershipsCards()->update(['contact' => $this->contact_no,'card_number' =>$this->card_number]);
+            $checkData =  Membership::where('contact','!=', $this->contact_no)->where('card_number', $this->card_number)->first();
+            if($checkData){
+                 $this->showToastr("error",'This card no already exists',false);
+                 return false;
+            }
+            $data = ProductOrderDetails::where('customer_phone',$this->contact)->orderBy('id', 'desc')->first();
+            $data->update(['customer_phone' => $this->contact_no,'card_number' =>$this->card_number]);
+            Membership::where(['contact' => $this->contact_no])->update(['contact' => $this->contact_no,'card_number' =>$this->card_number,'card_status' => 'Y']);
+        }
+        else{
+             $checkData =  Membership2::where('contact','!=', $this->contact_no)->where('card_number', $this->card_number)->first();
+            if($checkData){
+                 $this->showToastr("error",'This card no already exists',false);
+                 return false;
+            }
+            $data = ProductOrderDetails2::where('customer_phone',$this->contact)->orderBy('id', 'desc')->first();
+            $data->update(['customer_phone' => $this->contact_no,'card_number' =>$this->card_number]);
+            Membership2::where(['contact' => $this->contact_no])->update(['contact' => $this->contact_no,'card_number' =>$this->card_number,'card_status' => 'Y']);
+        }
+
         $this->showToastr("success",'Update your information');
         return redirect()->route('customer_card_list');
     }
@@ -152,11 +171,11 @@ class CustomerCardList extends Component
     {
         if($this->storeUser == 1){
 
-            $customerQuery = ProductOrderDetails::select('customer_name', 'customer_phone','order_date','card_number')->with('membershipsCard');
+            $customerQuery = ProductOrderDetails::select('customer_name', 'customer_phone','order_date','card_number')->where('customer_phone', '!=', "0")->with('cardData');
         }
         else{
 
-            $customerQuery = ProductOrderDetails2::select('customer_name', 'customer_phone','order_date','card_number')->with('membershipsCard');
+            $customerQuery = ProductOrderDetails2::select('customer_name', 'customer_phone','order_date','card_number')->where('customer_phone', '!=', "0")->with('cardData');
         }
     	if ($this->searchPhone)
     	{
@@ -167,6 +186,17 @@ class CustomerCardList extends Component
         {
            $customerQuery = $customerQuery->where('card_number', 'like', '%' . $this->searchCard . '%');
         }
+           if($this->dateForm)
+        {
+            $date['form_date'] = $this->dateForm;
+            $customerQuery = $customerQuery->where(DB::raw("DATE(order_date)"),'>=',date('Y-m-d',strtotime($date['form_date'])));
+        }
+        if($this->dateTo)
+        {
+            $date['to_date'] = $this->dateTo;
+            $customerQuery = $customerQuery->where(DB::raw("DATE(order_date)"),'<=',date('Y-m-d',strtotime($date['to_date'])));
+        }
+       // dd($customerQuery->take(2)->get());
         
         return view('livewire.admin.customer.customer-card-list', [
             'customers' => $customerQuery

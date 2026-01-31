@@ -34,9 +34,11 @@ Route::get('reset-password',[ResetPasswordController::class,'resetPassword'])->n
 Route::post('reset-password',[ResetPasswordController::class,'resetPasswordSave'])->name('reset_password_save');
 
 Route::group(['middleware' => 'auth'], function () {
+    Route::post('logout',[LoginController::class,'logout'])->name('logout');
+    Route::get('dashboard',[SiteSettingController::class,'dashboard'])->name('dashboard');
 Route::group(['middleware'=> 'user.permission'], function(){
-Route::post('logout',[LoginController::class,'logout'])->name('logout');
-Route::get('dashboard',[SiteSettingController::class,'dashboard'])->name('dashboard');
+Route::get('site-settings',[SiteSettingController::class,'siteSettings'])->name('site.settings');
+/* Route::get('dashoard',[SiteSettingController::class,'dashboard'])->name('dashboard'); */
 Route::get('change-password',[SiteSettingController::class,'changePassword'])->name('change_password');
 /*Godown*/
 Route::get('godown-stocks',[GodownController::class,'godownStock'])->name('godown_stock');
@@ -44,6 +46,7 @@ Route::get('godown-stocks',[GodownController::class,'godownStock'])->name('godow
 Route::get('products',[ProductController::class,'productList'])->name('product_index');
 Route::get('products/order/{order_id}',[ProductController::class,'productOrder'])->name('product.order');
 Route::get('limited-products-list',[ProductController::class,'limitedProduct'])->name('limited_product');
+Route::get('out-of-products',[ProductController::class,'outOfProduct'])->name('out_of_product');
 Route::get('uploda-products-image',[ProductController::class,'uplodaProductImage'])->name('upload_product_image');
 
 Route::resources([
@@ -74,7 +77,6 @@ Route::get('products/add-to-cart',[ProductCartController::class,'addToCart'])->n
 
 });
 });
-
 
 Route::get('web-test', function () {
     dd('okkdd');

@@ -11,6 +11,10 @@ use App\Models\Setting;
 use App\Models\User;
 use App\Models\Product;
 use App\Models\Product2;
+use App\Models\ProductOrder;
+use App\Models\ProductOrder2;
+use App\Models\ReturnProduct;
+use App\Models\ReturnProduct2;
 use App\Models\CartItem;
 use App\Models\CartItem2;
 use App\Models\Gallery;
@@ -33,16 +37,20 @@ class ProductList extends Component
 	use WithPagination, WithFileUploads;
     use WithSorting;
     use AlertMessage;
+    protected $paginationTheme = 'bootstrap';
     public  $state=[], $viewProduct =[], $type='edit', $deleteIds=[];
-    public $searchName, $name, $product_code, $quantity, $default_quantity, $purchase_price, $selling_price, $image, $storeUser,$productSearch =[], $gallery_image, $product_id, $cart_quantity=[], $discount=[], $cart_count,$perPage,$count_cart_item,$user_type, $store, $printProducts, $viewOrder, $setting, $formSubmit, $discount_product_id=[], $discount_amt, $discount_type,$is_discount, $edit_is_discount,$bar_code;
+    public $searchName, $name, $product_code, $quantity, $default_quantity, $purchase_price, $selling_price, $image, $storeUser,$productSearch =[], $gallery_image, $product_id, $cart_quantity=[], $discount=[], $cart_count,$perPage,$count_cart_item,$user_type, $store, $printProducts, $viewOrder, $setting, $formSubmit, $discount_product_id=[], $discount_amt, $discount_type,$is_discount=false, $edit_is_discount,$bar_code;
+    public  $order_id, $returnOrder, $product_name, $total_profit, $product_qty, $product_selling_price, $return_order_id;
 	protected $listeners = ['deleteConfirm', 'changeStatus', 'loadMore', 'viewProductData'];
     
 	public function generateBarCode($id){
         if($this->storeUser == 1)
         {
+            $this->state =[];
             $productData = Product::find($id);
         }
         else{
+            $this->state =[];
             $productData = Product2::find($id);
 
         }
@@ -53,9 +61,9 @@ class ProductList extends Component
 
             $bar_code = null;
             while (true) {
-                $numSeed = "0123456789";
+                $numSeed = "0123467556789";
                 $shuffled = str_shuffle($numSeed);
-                $bar_code  =  substr($shuffled,1,20);
+                $bar_code  =  substr($shuffled,1,13);
                 $bar_code = $bar_code;
                 $oldData = Product::where('bar_code', $bar_code)->count();
                 if($oldData == 0)
@@ -74,7 +82,7 @@ class ProductList extends Component
     }
 	public function mount()
     {   
-        $this->perPage =200;
+        $this->perPage =env('PER_PAGE', 50);
         $this->formSubmit = 0;
         $this->setting = Setting::first();
         if(Auth::user()->type=='A')
@@ -128,8 +136,10 @@ class ProductList extends Component
     }
     public function loadMore()
     {
-        $this->perPage= $this->perPage+200;
+        $this->perPage= $this->perPage+env('PER_PAGE', 50);
     }
+
+    
     
 	
 
@@ -282,7 +292,7 @@ class ProductList extends Component
         }
         if ($this->searchName)
         {
-           $productQuery = $productQuery->where('name', 'like', '%' . $this->searchName . '%')->orWhere('product_code', 'like', '%' . $this->searchName . '%');
+           $productQuery = $productQuery->where('name', 'like', '%' . $this->searchName . '%')->orWhere('product_code', 'like', '%' . $this->searchName . '%')->orWhere('bar_code', 'like', '%' . $this->searchName . '%');
            //$printProductsQuery = $printProductsQuery->where('name', 'like', '%' . $this->searchName . '%')->orWhere('product_code', 'like', '%' . $this->searchName . '%');
         }
         //$this->printProducts = $printProductsQuery->get();
@@ -512,7 +522,7 @@ class ProductList extends Component
                 while (true) {
                     $numSeed = "0123456789";
                     $shuffled = str_shuffle($numSeed);
-                    $barCode  =  substr($shuffled,1,20);
+                    $barCode  =  substr($shuffled,1,12);
                     $barCode = $barCode;
                     $oldData = Product::where('bar_code', $barCode)->count();
                     if($oldData == 0)
@@ -591,7 +601,7 @@ class ProductList extends Component
                 while (true) {
                     $numSeed = "0123456789";
                     $shuffled = str_shuffle($numSeed);
-                    $barCode  =  substr($shuffled,1,20);
+                    $barCode  =  substr($shuffled,1,12);
                     $barCode = $barCode;
                     $oldData = Product2::where('bar_code', $barCode)->count();
                     if($oldData == 0)
@@ -642,13 +652,18 @@ class ProductList extends Component
 
     }
 
-    public function viewOrders($id)
+    public function viewOrders($id, $p_id)
     {
 //dd($id);
-        if($this->storeUser == 1)
+        if($this->storeUser == 1){
+
+             $this->viewProduct = Product::with('productQuantities','productReductions', 'returnProducts','productOrdersByDesc.orderDetails')->withSum('productQuantities', 'quantity')->withSum('productOrders', 'qty')->withSum('returnProductsQuantity', 'qty')->withSum('productReductions', 'qty')->find($p_id);
             $this->viewOrder = ProductOrderDetails::with('productDetails','returnProducts')->where('order_id',$id)->first();
-        else
+        }
+        else{
+            $this->viewProduct = Product2::with('productQuantities','productReductions', 'returnProducts','productOrdersByDesc.orderDetails')->withSum('productQuantities', 'quantity')->withSum('productOrders', 'qty')->withSum('returnProductsQuantity', 'qty')->withSum('productReductions', 'qty')->find($p_id);
             $this->viewOrder = ProductOrderDetails2::with('productDetails','returnProducts')->where('order_id',$id)->first();
+        }
         
         //dd($this->viewOrder);
         $this->dispatchBrowserEvent('show-order-view-form');
@@ -656,14 +671,164 @@ class ProductList extends Component
 
     public function viewProductData($id)
     {
-        if($this->storeUser == 1)
-            $this->viewProduct = Product::with('productQuantities','productReductions', 'returnProducts','productOrders.orderDetails')->withSum('productQuantities', 'quantity')->withSum('productOrders', 'qty')->withSum('returnProductsQuantity', 'qty')->withSum('productReductions', 'qty')->find($id);
+        if($this->storeUser == 1){
+
+            $this->viewProduct = Product::with('productQuantities','productReductions', 'returnProducts','productOrdersByDesc.orderDetails')->withSum('productQuantities', 'quantity')->withSum('productOrders', 'qty')->withSum('returnProductsQuantity', 'qty')->withSum('productReductions', 'qty')->find($id);
+        }
         else
-            $this->viewProduct = Product2::with('productQuantities','productReductions', 'returnProducts','productOrders.orderDetails')->withSum('productQuantities', 'quantity')->withSum('productOrders', 'qty')->withSum('returnProductsQuantity', 'qty')->find($id);
-        //dd($this->viewProduct);
+            $this->viewProduct = Product2::with('productQuantities','productReductions', 'returnProducts','productOrdersByDesc.orderDetails')->withSum('productQuantities', 'quantity')->withSum('productOrders', 'qty')->withSum('returnProductsQuantity', 'qty')->withSum('productReductions', 'qty')->find($id);
 
         $this->dispatchBrowserEvent('show-product-view-form');
 
+    }
+
+    public function saveReturnOrder()
+    {
+        if($this->storeUser == 1){
+            $order = ProductOrder::with('customer')->find($this->return_order_id);
+            $product = Product::find($order->product_id);
+        }else{
+            $order = ProductOrder2::with('customer')->find($this->return_order_id);
+            $product = Product2::find($order->product_id);
+        }
+        
+        
+        $this->validate([
+            'product_qty' => 'required|integer|between:1,'.$order->qty
+        ],['product_qty.between' =>'Enter valid quantity']);
+        
+        if($order->qty == $this->product_qty)
+        {
+            if($this->storeUser == 1){
+                $data = ReturnProduct::firstOrCreate ([
+                    'order_id' => $order->order_id,
+                    'product_id' => $order->product_id
+                ]);
+            }
+            else{
+                $data = ReturnProduct2::firstOrCreate ([
+                    'order_id' => $order->order_id,
+                    'product_id' => $order->product_id
+                ]);
+            }
+
+            $data->update([
+                'product_name' => $order->product_name,
+                'product_code' => $order->product_code,
+                'qty' => ($data->qty+$order->qty),
+                'selling_price' => $order->selling_price,
+                'discount' => $order->discount,
+                'purchase_price' => $order->purchase_price,
+                'price' => ($order->selling_price*$this->product_qty),
+                /*'price' => ($data->price+(($order->selling_price*$this->product_qty)-($order->discount*$this->product_qty))),*/
+                'customer_contact' => $order->customer->customer_phone,
+                'date' => date('Y-m-d'),
+                'status' => 'active',
+            ]);
+            if($data)
+            {
+                $product->update([
+                    'quantity' => ($product->quantity+$this->product_qty),
+                ]);
+                $discount_amt = 0.00;
+                $perctge_amt = 0.00;
+                if($order->customer->discount_amt != '0.00')
+                {
+                    $discount_amt = $order->customer->discount_amt-($order->discount*$this->product_qty);
+                }
+                if($order->customer->perctge_amt != '0.00')
+                {
+                    $perctge_amt = $order->customer->perctge_amt-($order->discount*$this->product_qty);
+                }
+                $order->customer()->update([
+                    'subtotal' => ($order->customer->subtotal-($order->selling_price*$this->product_qty)),
+                    'discount_amt' => $discount_amt,
+                    'perctge_amt' => $perctge_amt,
+                    'total_amount' => ($order->customer->total_amount-(($order->selling_price-$order->discount)*$this->product_qty)),
+
+                ]);
+                $order->delete();
+
+            }
+            $this->showToastr("success",'Product retured successfully');
+            return redirect()->route('product_index');
+
+        }else
+        {
+            if($this->storeUser == 1){
+                $data = ReturnProduct::firstOrCreate ([
+                    'order_id' => $order->order_id,
+                    'product_id' => $order->product_id
+                ]);
+            }else{
+                $data = ReturnProduct2::firstOrCreate ([
+                    'order_id' => $order->order_id,
+                    'product_id' => $order->product_id
+                ]);
+            }
+
+
+            $data->update([
+                'product_name' => $order->product_name,
+                'product_code' => $order->product_code,
+                'qty' => ($data->qty+$this->product_qty),
+                'selling_price' => $order->selling_price,
+                'discount' => $order->discount,
+                'purchase_price' => $order->purchase_price,
+                'price' => ($order->selling_price*$this->product_qty),
+                /*'price' => ($data->price+(($order->selling_price*$this->product_qty)-($order->discount*$this->product_qty))),*/
+                'customer_contact' => $order->customer->customer_phone,
+                'status' => 'active',
+            ]);
+            if($data)
+            {
+                if($this->storeUser == 1)
+                    $product = Product::find($order->product_id);
+                else
+                    $product = Product2::find($order->product_id);
+
+                $product->update(['quantity' => ($product->quantity+$this->product_qty)]);
+                $order->update([
+                    'qty' => $order->qty-$this->product_qty,
+                    'subtotal' => $order->selling_price*($order->qty-$this->product_qty),
+                ]);
+                $discount_amt = 0.00;
+                $perctge_amt = 0.00;
+                if($order->customer->discount_amt != '0.00')
+                {
+                    $discount_amt = $order->customer->discount_amt-($order->discount*$this->product_qty);
+                }
+                if($order->customer->perctge_amt != '0.00')
+                {
+                    $perctge_amt = $order->customer->perctge_amt-($order->discount*$this->product_qty);
+                }
+                $order->customer()->update([
+                    'subtotal' => ($order->customer->subtotal-($order->selling_price*$this->product_qty)),
+                    'discount_amt' => $discount_amt,
+                    'perctge_amt' => $perctge_amt,
+                    'total_amount' => ($order->customer->total_amount-(($order->selling_price-$order->discount)*$this->product_qty)),
+
+                ]);
+            }
+            $this->showToastr("success",'Product retured successfully');
+            return redirect()->route('product.order', $this->order_id);
+        }
+    }
+
+    public function returnOrder($id)
+    {
+        if($this->storeUser == 1)
+            $this->returnOrder = ProductOrder::with('customer')->find($id);
+        else
+            $this->returnOrder = ProductOrder2::with('customer')->find($id);
+
+        $this->return_order_id = $this->returnOrder->id;
+        $this->product_name = $this->returnOrder->product_name;
+        $this->product_code = $this->returnOrder->product_code;
+        $this->product_qty = $this->returnOrder->qty;
+        $this->product_selling_price = $this->returnOrder->selling_price;
+
+        $this->dispatchBrowserEvent('show-return-product-form');
     }
 
    

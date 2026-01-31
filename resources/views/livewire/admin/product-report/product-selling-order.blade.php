@@ -9,14 +9,20 @@
 						<div class="row gy-2 gx-2 align-items-center justify-content-xl-start justify-content-between">
 							<div class="col-auto">
 								<div class="mb-3">
-									<input class="form-control" type="date" wire:model.lazy="dateForm" placeholder="Date From">
+									<input class="form-control" type="date" wire:model="dateForm" placeholder="Date From">
 								</div>
 							</div>
 							<div class="col-auto">
 								<div class="mb-3">
-									<input class="form-control" type="date" wire:model.lazy="dateTo" placeholder="Date From">
+									<input class="form-control" type="date" wire:model="dateTo" placeholder="Date From">
 								</div>
 							</div>
+							<div class="col-auto">
+								<div class="mb-3">
+								<input class="form-control" type="search" wire:model="searchName" placeholder="Search...">
+								</div>
+							</div>
+							
 							<div class="col-auto">
 								<div class="mb-3">
 									<button type="button" class="btn btn-danger" wire:click="resetSearch">All</button>                                                
@@ -40,6 +46,8 @@
                         </div>
                     </div><!-- end col-->
                     @endif
+
+					
 				</div>
 
 				<div wire:loading wire:target="storeUser">
@@ -85,15 +93,16 @@
 							@endforeach
                             @else
                             <tr>
-                            	<td colspan="12" class="align-center">No records available</td>
+                            	<td colspan="12" class="text-center">No records available</td>
                             </tr>
                             @endif
 						</tbody>
 					</table>
 				</div>
-				@if($products->hasMorePages())
+				{{-- @if($products->hasMorePages())
                     <button wire:click.prevent="loadMore" class="btn btn-primary">Load more</button>
-                @endif
+                @endif --}}
+				 {{ $products->links() }}
 			</div> <!-- end card-body -->
 		</div> <!-- end card -->
 	</div><!-- end col -->

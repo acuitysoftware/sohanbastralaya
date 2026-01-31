@@ -25,10 +25,10 @@ class UploadProductImage extends Component
     public  $state=[], $type='edit', $deleteIds=[],$perPage;
     public $searchName, $storeUser;
 	protected $listeners = ['deleteConfirm', 'changeStatus','deleteConfirmUsers','loadMore'];
-
+    protected $paginationTheme = 'bootstrap';
     public function mount()
     {
-        $this->perPage =200;
+        $this->perPage =env('PER_PAGE', 50);
         if(Auth::user()->type=='A')
         {
             $this->storeUser = 1;
@@ -50,7 +50,7 @@ class UploadProductImage extends Component
     
     public function loadMore()
     {
-        $this->perPage= $this->perPage+200;
+        $this->perPage= $this->perPage+env('PER_PAGE', 50);
     }
 	public function updatingPerPage()
     {
@@ -70,17 +70,21 @@ class UploadProductImage extends Component
     public function render()
     {
         if ($this->storeUser == 1)
-            $productQuery = Product::query();
+            $productQuery = Product::has('gallery', '==', '0');
         else
-            $productQuery = Product2::query();
+            $productQuery = Product2::has('gallery', '==', '0');
         if ($this->searchName)
         {
-           $productQuery = $productQuery->where('name', 'like', '%' . $this->searchName . '%')->orWhere('product_code', 'like', '%' . $this->searchName . '%');
+            $name =$this->searchName;
+           $productQuery = $productQuery->where(function($q) use($name){
+            $q ->where('name', 'like', '%' . $this->searchName . '%')->orWhere('product_code', 'like', '%' . $this->searchName . '%');
+           });
+          
         }
            
         return view('livewire.admin.product.upload-product-image', [
             'products' => $productQuery
-                ->orderBy($this->sortBy, $this->sortDirection)
+                ->orderBy('id', 'desc')
                 ->paginate($this->perPage)
         ]);
     }

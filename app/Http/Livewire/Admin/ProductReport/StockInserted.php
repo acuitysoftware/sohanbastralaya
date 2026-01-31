@@ -20,11 +20,13 @@ use App\Http\Livewire\Traits\AlertMessage;
 class StockInserted extends Component
 {
     use AlertMessage;
+    use WithPagination;
 	public $perPage, $orderList=[],$product, $searchName, $storeUser;
     protected $listeners = ['loadMore'];
+    protected $paginationTheme = 'bootstrap';
 	public function mount()
 	{
-		$this->perPage =200; 
+		$this->perPage =env('PER_PAGE', 50); 
         if(Auth::user()->type=='A')
         {
             $this->storeUser = 1;
@@ -47,7 +49,7 @@ class StockInserted extends Component
 
 	public function loadMore()
     {
-        $this->perPage= $this->perPage+200;
+        $this->perPage= $this->perPage+env('PER_PAGE', 50);
     }
 
     public function viewOrder($id)

@@ -30,8 +30,9 @@
                             @php
                             $total+=$row->subtotal;
                         @endphp
-                            <tr>
-                                <td>{{$key+1}}</td>
+                           
+                                    <tr>
+                                        <td>{{ $key+1 }}</td>
                                 <td>{{$row->order_id}}</td>
                                 <td>{{date('d/m/Y',strtotime(@$row->order_date)) }} </td>
                                 <td>{{$row->subtotal}}</td>

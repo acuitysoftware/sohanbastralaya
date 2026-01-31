@@ -28,10 +28,10 @@ class DailyOrderReport extends Component
     public  $state=[], $type='edit', $deleteIds=[],$perPage;
     public $searchName, $startDate, $endDate, $storeUser;
 	protected $listeners = ['deleteConfirm', 'changeStatus','deleteConfirmUsers', 'loadMore'];
-
+protected $paginationTheme = 'bootstrap';
 	public function mount()
     {
-        $this->perPage =200; 
+        $this->perPage =env('PER_PAGE', 50); 
         if(Auth::user()->type=='A')
         {
             $this->storeUser = 1;
@@ -53,7 +53,7 @@ class DailyOrderReport extends Component
     }
     public function loadMore()
     {
-        $this->perPage= $this->perPage+200;
+        $this->perPage= $this->perPage+env('PER_PAGE', 50);
     }
 
     public function resetSearch()

@@ -30,10 +30,11 @@ class SubAdminOrderView extends Component
     use AlertMessage;
     public $searchName, $dateForm, $dateTo,$viewOrder, $product_name, $total_profit, $product_code, $product_qty, $product_selling_price, $return_order_id,$perPage, $user_id, $total_purchase, $returnOrder,$setting, $storeUser;
 	protected $listeners = ['deleteConfirm', 'changeStatus','deleteConfirmUsers','loadMore'];
+    protected $paginationTheme = 'bootstrap';
 	public function mount($id)
 	{
 		$this->user_id = $id;
-		$this->perPage =200;
+		$this->perPage =env('PER_PAGE', 50);
         $this->setting = Setting::first();
         if(Auth::user()->type=='A')
         {
@@ -55,7 +56,7 @@ class SubAdminOrderView extends Component
     }
 	public function loadMore()
     {
-        $this->perPage= $this->perPage+200;
+        $this->perPage= $this->perPage+env('PER_PAGE', 50);
     }
     public function updatingPerPage()
     {
@@ -118,7 +119,7 @@ class SubAdminOrderView extends Component
         return view('livewire.admin.order.sub-admin-order-view', [
             'orders' => $orderQuery
                 ->orderBy('id', 'desc')
-                ->get()
+                ->paginate($this->perPage)
         ]);
     }
 

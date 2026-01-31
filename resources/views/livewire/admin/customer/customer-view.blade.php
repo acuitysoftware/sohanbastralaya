@@ -130,7 +130,7 @@
 </div><!-- /.modal -->
 
 <!-- View Modal -->
-<div wire:ignore.self id="orderView" class="modal fade"  tabindex="-1" role="dialog" aria-labelledby="viewmodalLabel" aria-hidden="true"> 
+<div wire:ignore.self id="orderView" class="modal fade"  tabindex="-1" role="dialog" aria-labelledby="viewmodalLabel" aria-hidden="true" style="z-index: 99999;"> 
     <div class="modal-dialog modal-full-width">
         <div class="modal-content">
             <div class="modal-header modal-colored-header bg-primary">
@@ -338,7 +338,7 @@
 </div>
 <!-- /.modal -->
 <!-- My Modal -->
-<div wire:ignore.self id="returnProduct" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="return-modalLabel" aria-hidden="true">    
+<div wire:ignore.self id="returnProduct" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="return-modalLabel" aria-hidden="true" style="z-index: 999999;">    
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header modal-colored-header bg-primary">

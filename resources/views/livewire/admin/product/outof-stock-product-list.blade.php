@@ -63,7 +63,7 @@
                                 <th>Products Name</th>
                                 <th>Code</th>
                                 <th>Total Qty</th>
-                                <th>Available Qty</th>
+                               {{--  <th>Available Qty</th> --}}
                                 <th>Selling Price</th>
                                 @if(Auth::user()->type=='A')
                                 <th>Purchase Price</th>
@@ -78,17 +78,6 @@
                            @php
                                     $item = ($products->perPage() * ($products->currentPage() - 1)) + ($key+ 1);
                                  @endphp
-                                 @php
-                                    $avl_qty = 0;
-                                    $avl_qty =
-                                        $row->product_quantities_sum_quantity -
-                                        ($row->return_products_quantity_sum_qty +
-                                            $row->product_orders_sum_qty +
-                                            $row->productReductions->sum('qty'));
-                                            if($avl_qty != $row->quantity){
-                                                $row->update(['quantity' => $avl_qty]);
-                                            }
-                                @endphp
                                     <tr>
                                         <td>{{ $item }}</td>
                                 <td>
@@ -105,7 +94,7 @@
                                 <td>{{$row->name}}</td>
                                 <td>{{$row->product_code}}</td>
                                 <td>{{$row->product_quantities_sum_quantity}}</td>
-                                <td>{{$avl_qty?$avl_qty:'Out of Stock'}}</td> 
+                             {{--    <td>{{$row->quantity?$row->quantity:'Out of Stock'}}</td>  --}}
                                 <td>{{$row->selling_price}}</td> 
                                 @if(Auth::user()->type=='A')
                                 <td>{{$row->purchase_price}}</td> 

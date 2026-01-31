@@ -15,11 +15,9 @@ use Livewire\WithPagination;
 use Livewire\WithFileUploads;
 use App\Http\Livewire\Traits\WithSorting;
 use App\Http\Livewire\Traits\AlertMessage;
-
-class LimitedProductList extends Component
+class OutofStockProductList extends Component
 {
-
-	use WithPagination, WithFileUploads;
+    use WithPagination, WithFileUploads;
     use WithSorting;
     use AlertMessage;
     public  $state=[], $type='edit', $deleteIds=[];
@@ -69,16 +67,15 @@ class LimitedProductList extends Component
     public function render()
     {
         if ($this->storeUser == 1)
-    	    $productQuery = Product::withSum('productQuantities', 'quantity')->withSum('productOrders', 'qty')->withSum('returnProductsQuantity', 'qty')->withSum('productReductions', 'qty')->whereColumn('quantity', '<=' ,'default_quantity')->where('quantity', '>', 0);
+    	    $productQuery = Product::withSum('productQuantities','quantity')->where('quantity', 0);
         else
-            $productQuery = Product2::withSum('productQuantities', 'quantity')->withSum('productOrders', 'qty')->withSum('returnProductsQuantity', 'qty')->withSum('productReductions', 'qty')->whereColumn('quantity', '<=' ,'default_quantity')->where('quantity', '>', 0);
-
+            $productQuery = Product2::withSum('productQuantities','quantity')->where('quantity', 0);
     	if ($this->searchName)
     	{
            $productQuery = $productQuery->where('name', 'like', '%' . $this->searchName . '%')->orWhere('product_code', 'like', '%' . $this->searchName . '%');
     	}
         
-    	return view('livewire.admin.product.limited-product-list', [
+    	return view('livewire.admin.product.outof-stock-product-list', [
             'products' => $productQuery
                 ->orderBy('id', 'desc')->paginate($this->perPage)
         ]);

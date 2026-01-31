@@ -125,19 +125,24 @@
                                     <td>{{number_format($profit,2)}}</td>
                                 @endif
                                 <td>{{$row->discount_type=='dis_amt'?$row->discount_amt:$row->discount_percent}}</td>
-                                <td style="white-space: nowrap;">
-                                    @if(Auth::user()->type=='A' || in_array('order-view', Auth::user()->permissions()->pluck('permission')->toArray()))
+                                <td >
+                                {{-- <td style="white-space: nowrap; width:100px;" > --}}
+                                    @if($user->type=='A')
+                                    <a href="javascript:void(0);" title="View" class="action-icon" wire:click="viewOrders({{$row->id}})"><i class="mdi mdi-eye"></i></a>
+                                    <a href="javascript:void(0);" class="action-icon" title="Delete" wire:click="deleteAttempt({{ $row->id }})"><i class="mdi mdi-delete"></i></a>
+                                    @endif
+                                    @if(in_array('order-view', Auth::user()->permissions()->pluck('permission')->toArray()))
                                     <a href="javascript:void(0);" title="View" class="action-icon" wire:click="viewOrders({{$row->id}})"><i class="mdi mdi-eye"></i></a>
                                     @endif
-                                    @if(Auth::user()->type=='A' || in_array('order-delete', Auth::user()->permissions()->pluck('permission')->toArray()))
-                                    <a href="javascript:void(0);" class="action-icon" id="warning" title="Delete" wire:click="deleteAttempt({{ $row->id }})"><i class="mdi mdi-delete"></i></a>
+                                    @if(in_array('order-delete', Auth::user()->permissions()->pluck('permission')->toArray()))
+                                    <a href="javascript:void(0);" class="action-icon" title="Delete" wire:click="deleteAttempt({{ $row->id }})"><i class="mdi mdi-delete"></i></a>
                                     @endif
                                 </td>
                             </tr>
                             @endforeach
                             @else
                             <tr>
-                                <td colspan="10" class="align-center">No records available</td>
+                                <td colspan="10" class="text-center">No records available</td>
                             </tr>
                             @endif
                             @php
@@ -156,7 +161,7 @@
                         </tbody>
                     </table>
                 </div>
-                
+                 {{ $orders->links() }}
             </div> <!-- end card-body -->
         </div> <!-- end card -->
     </div><!-- end col -->

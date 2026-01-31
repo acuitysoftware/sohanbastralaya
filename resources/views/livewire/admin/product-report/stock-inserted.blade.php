@@ -89,14 +89,14 @@
 								</td>
                                 @php
                                     $avl_qty = 0;
-                                    $avl_qty = $row->product_quantities_sum_quantity-($row->return_products_quantity_sum_qty+$row->product_orders_sum_qty+$row->productReductions->sum('qty'));
+                                    $avl_qty = $row->product_quantities_sum_quantity-($row->product_orders_sum_qty+$row->productReductions->sum('qty'));
 
                                 @endphp
 								<td>{{$row->product_code}}</td>
                                 <td>{{$row->product_quantities_sum_quantity-$row->productReductions->sum('qty')}}</td>
 								<td>{{$avl_qty}}</td>
-								<td>{{$row->return_products_quantity_sum_qty}}</td>
-								<td>{{$row->product_orders_sum_qty}}</td>
+								<td>{{$row->return_products_quantity_sum_qty??0}}</td>
+								<td>{{$row->product_orders_sum_qty??0}}</td>
 								<td>{{$row->selling_price}}</td>
 
                                 @if(Auth::user()->type=='A')
@@ -111,15 +111,16 @@
 							@endforeach
                             @else
                             <tr>
-                            	<td colspan="12" class="align-center">No records available</td>
+                            	<td colspan="12" class="text-center">No records available</td>
                             </tr>
                             @endif
 						</tbody>
 					</table>
 				</div>
-				@if($products->hasMorePages())
+				{{-- @if($products->hasMorePages())
                     <button wire:click.prevent="loadMore" class="btn btn-primary">Load more</button>
-                @endif
+                @endif --}}
+                 {{ $products->links() }}
 			</div> <!-- end card-body -->
 		</div> <!-- end card -->
 	</div><!-- end col -->
@@ -135,13 +136,13 @@
 
 
 
-                    <div class="col-xl-12">
+                  {{--   <div class="col-xl-12">
                         <form class="row align-items-center justify-content-xl-start justify-content-between">
                             <div class="col-auto">
                                 <button type="button" class="btn btn-secondary mb-1">Back</button>
                             </div>
                         </form>                            
-                    </div>
+                    </div> --}}
 
 
                 <div class="table-responsive mt-2">
@@ -165,6 +166,10 @@
                                 <td>{{$row->qty}}</td>
                             </tr>
                             @endforeach
+                            @else
+                            <tr>
+                            	<td colspan="4" class="text-center">No records available</td>
+                            </tr>
                             @endif
                         </tbody>
                     </table>

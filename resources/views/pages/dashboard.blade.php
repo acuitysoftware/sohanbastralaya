@@ -6,13 +6,13 @@
     <div class="row">
         <div class="col-12">
             <div class="page-title-box">
-                <h4 class="page-title">Expenses</h4>
+                <h4 class="page-title">Dashboard</h4>
             </div>
         </div>
     </div>
-    <!-- end page title -->
-
-    <livewire:admin.product-report.purchase-report/>
+    
+    
+    
 </div>
 
 @endsection      

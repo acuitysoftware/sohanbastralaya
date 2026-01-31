@@ -20,7 +20,7 @@ class OrderSubList extends Component
     use WithSorting;
     use AlertMessage;
     public $total_selling, $total_purchase_price, $total_discount, $discount_percentage, $profit_percentage, $total_purchase, $total_profit;
-
+    protected $paginationTheme = 'bootstrap';
 	public function mount()
     {
         

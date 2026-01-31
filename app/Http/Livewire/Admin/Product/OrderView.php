@@ -28,7 +28,7 @@ class OrderView extends Component
     use AlertMessage;
 
     public $setting, $storeUser, $order_id, $returnOrder, $product_name, $total_profit, $product_code, $product_qty, $product_selling_price, $return_order_id;
-
+    protected $paginationTheme = 'bootstrap';
     public function mount($order_id)
     {   
         $this->order_id =$order_id;

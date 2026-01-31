@@ -51,6 +51,10 @@ class ProductOrderDetails extends Model
 	{
 		return $this->hasMany(Membership::class, 'order_id', 'order_id');
 	}
+	public function cardData()
+	{
+		return $this->hasOne(Membership::class, 'contact', 'customer_phone')->orderBy('id', 'desc');
+	}
 
 	public function membershipsCards()
 	{

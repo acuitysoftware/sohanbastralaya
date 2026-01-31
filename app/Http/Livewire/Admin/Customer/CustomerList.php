@@ -33,11 +33,12 @@ class CustomerList extends Component
     use AlertMessage;
     public $card_details, $total_credit_points, $perPage, $returnOrder, $setting,$memberships=[];
     public $searchName, $searchPhone, $searchCard, $customer_details =[], $orderDetails, $viewOrder=[], $expiry_date_count, $storeUser;
+    protected $paginationTheme = 'bootstrap';
 	protected $listeners = ['viewCustomer', 'loadMore', 'customerDetails'];
 
 	public function mount()
     {
-        $this->perPage =200;
+        $this->perPage = env('PER_PAGE', 50);
         $this->setting = Setting::first();
         if(Auth::user()->type=='A')
         {
@@ -59,7 +60,7 @@ class CustomerList extends Component
     }
     public function loadMore()
     {
-        $this->perPage= $this->perPage+200;
+        $this->perPage= $this->perPage+env('PER_PAGE', 50);
     }
 
     public function resetSearch()
@@ -72,25 +73,25 @@ class CustomerList extends Component
     public function render()
     {
         if($this->storeUser == 1){
-            $customerQuery = ProductOrderDetails::query();
+            $customerQuery = ProductOrderDetails::join('st_product_order', 'st_product_order.order_id', '=', 'st_product_order_details.order_id')->select('st_product_order_details.customer_name','st_product_order_details.customer_phone','st_product_order_details.order_date',DB::raw("SUM(st_product_order.subtotal) as 'total_selling_price'"),DB::raw("sum(st_product_order.qty*st_product_order.discount) as 'total_discount'"),DB::raw('sum(st_product_order.qty*st_product_order.purchase_price) AS total_purchase_price'))->where('st_product_order_details.customer_phone', '!=',"0")->orderBy('st_product_order_details.id', 'desc')->groupBy('st_product_order_details.customer_phone');
             if ($this->searchPhone)
             {
                $customerQuery = $customerQuery->where('customer_name', 'like', '%' . $this->searchPhone . '%')->orWhere('customer_phone', 'like', '%' . $this->searchPhone . '%');
             }
 
             
-            $customerQuery = $customerQuery->join('st_product_order', 'st_product_order.order_id', '=', 'st_product_order_details.order_id')->select('st_product_order_details.customer_name','st_product_order_details.customer_phone','st_product_order_details.order_date',DB::raw("SUM(st_product_order.subtotal) as 'total_selling_price'"),DB::raw("sum(st_product_order.qty*st_product_order.discount) as 'total_discount'"),DB::raw('sum(st_product_order.qty*st_product_order.purchase_price) AS total_purchase_price'))->orderBy('st_product_order_details.id', 'desc')->groupBy('st_product_order_details.customer_phone')->paginate($this->perPage);
+            $customerQuery = $customerQuery->paginate($this->perPage);
 
 
         }
         else{
-            $customerQuery = ProductOrderDetails2::query();
+            $customerQuery = ProductOrderDetails2::join('st_product_order', 'st_product_order.order_id', '=', 'st_product_order_details.order_id')->select('st_product_order_details.customer_name','st_product_order_details.customer_phone','st_product_order_details.order_date',DB::raw("SUM(st_product_order.subtotal) as 'total_selling_price'"),DB::raw("sum(st_product_order.qty*st_product_order.discount) as 'total_discount'"),DB::raw('sum(st_product_order.qty*st_product_order.purchase_price) AS total_purchase_price'))->where('st_product_order_details.customer_phone', '!=',"0")->orderBy('st_product_order_details.id', 'desc')->groupBy('st_product_order_details.customer_phone');
             if ($this->searchPhone)
             {
                $customerQuery = $customerQuery->where('customer_name', 'like', '%' . $this->searchPhone . '%')->orWhere('customer_phone', 'like', '%' . $this->searchPhone . '%');
             }
             
-            $customerQuery = $customerQuery->join('st_product_order', 'st_product_order.order_id', '=', 'st_product_order_details.order_id')->select('st_product_order_details.customer_name','st_product_order_details.customer_phone','st_product_order_details.order_date',DB::raw("SUM(st_product_order.subtotal) as 'total_selling_price'"),DB::raw("sum(st_product_order.qty*st_product_order.discount) as 'total_discount'"),DB::raw('sum(st_product_order.qty*st_product_order.purchase_price) AS total_purchase_price'))->orderBy('st_product_order_details.id', 'desc')->groupBy('st_product_order_details.customer_phone')->paginate($this->perPage);
+            $customerQuery = $customerQuery->paginate($this->perPage);
             
         }
         

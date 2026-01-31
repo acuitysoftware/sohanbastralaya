@@ -75,7 +75,7 @@
                         	@foreach($users as $key=>$user)
                                 @php
                                     $order_total = 0;
-                                    $total_order = 0;
+                                    /* $total_order = 0;
                                     $total_discount = 0;
                                     $purchase_price = 0;
                                     $total_profit = 0;
@@ -106,17 +106,17 @@
                                         }
                                     }
                                     $order_total= ($total_order-$total_discount);
-                                    $total_profit= ($total_order-$purchase_price);
-                                    if($order_total)
+                                    $total_profit= ($total_order-$purchase_price); */
+                                    if($user->order_total)
                                     {
-                                       $profit_percentage = (($total_profit*100)/$order_total); 
+                                       $profit_percentage = (($user->total_profit*100)/$user->order_total); 
                                     }
                                 @endphp
                             <tr>
                                 <td>{{$user->name}}</td>
-                                <td>{{number_format(($order_total),2)}}</td>
+                                <td>{{number_format(($user->order_total),2)}}</td>
                                 @if(Auth::user()->type=='A')
-                                    <td>{{number_format(($total_profit),2)}}</td>
+                                    <td>{{number_format(($user->total_profit),2)}}</td>
                                     <td>{{number_format($profit_percentage,2)}} %</td>
                                 @endif
                                 <td style="white-space: nowrap;">
@@ -128,7 +128,7 @@
                             @endforeach
                             @else
                             <tr>
-                            	<td colspan="5" class="align-center">No records available</td>
+                            	<td colspan="5" class="text-center">No records available</td>
                             </tr>
                             @endif
                         </tbody>

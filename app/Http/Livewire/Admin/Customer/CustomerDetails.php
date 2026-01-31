@@ -33,11 +33,12 @@ class CustomerDetails extends Component
     public $card_details, $total_credit_points, $perPage, $returnOrder, $setting,$memberships=[],$dateForm, $dateTo;
     public $searchName, $customer_details =[], $orderDetails, $viewOrder=[], $expiry_date_count, $storeUser, $contact,$perNo;
 	protected $listeners = ['viewCustomer', 'loadMore', 'customerDetails'];
+    protected $paginationTheme = 'bootstrap';
 	public function mount($contact)
 	{
-        $this->perNo = request()->perNo??200;
+        $this->perNo = request()->perNo??env('PER_PAGE', '50');
 		$this->contact = $contact;
-		$this->perPage =200;
+		$this->perPage =env('PER_PAGE', '50');
         $this->setting = Setting::first();
         if(Auth::user()->type=='A')
         {
@@ -57,7 +58,7 @@ class CustomerDetails extends Component
 
 	public function loadMore()
     {
-        $this->perPage= $this->perPage+200;
+        $this->perPage= $this->perPage+env('PER_PAGE', '50');
     }
 
      public function exportCsv()

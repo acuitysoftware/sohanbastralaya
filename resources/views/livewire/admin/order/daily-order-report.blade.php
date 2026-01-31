@@ -104,15 +104,16 @@
                             </tr>
                             @else
                             <tr>
-                                <td colspan="4" class="align-center">No records available</td>
+                                <td colspan="4" class="text-center">No records available</td>
                             </tr>
                             @endif
                         </tbody>
                     </table>
                 </div>
-                @if($orders->hasMorePages())
+                {{-- @if($orders->hasMorePages())
                     <button wire:click.prevent="loadMore" class="btn btn-primary">Load more</button>
-                @endif
+                @endif --}}
+                 {{ $orders->links() }}
             </div> <!-- end card-body -->
         </div> <!-- end card -->
     </div><!-- end col -->

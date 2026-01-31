@@ -17,17 +17,10 @@ class LoginDetailsList extends Component
     use WithSorting;
     use AlertMessage;
     public   $dateForm, $dateTo, $searchName;
-
+    protected $paginationTheme = 'bootstrap';
 	protected $listeners = ['deleteConfirm', 'changeStatus','deleteConfirmUsers'];
 	public function mount()
     {
-        $this->perPageList = [
-            ['value' => 5, 'text' => "5"],
-            ['value' => 10, 'text' => "10"],
-            ['value' => 20, 'text' => "20"],
-            ['value' => 50, 'text' => "50"],
-            ['value' => 100, 'text' => "100"]
-        ];
 
         $this->dateForm =date('Y-m-d');
         $this->dateTo =date('Y-m-d');

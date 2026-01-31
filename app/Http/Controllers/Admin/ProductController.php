@@ -21,6 +21,11 @@ class ProductController extends Controller
     	$data['title'] = 'Limited Product List';
     	return view('pages.product.limited_product_list', $data);
     }
+    public function outOfProduct()
+    {
+    	$data['title'] = 'Out of Product List';
+    	return view('pages.product.out_of_product_list', $data);
+    }
 
     public function uplodaProductImage()
     {

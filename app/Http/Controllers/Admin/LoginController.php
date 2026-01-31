@@ -14,18 +14,22 @@ class LoginController extends Controller
 {
     public function loginView()
     {
-
     	if(Auth::check())
 	    {
 	        return redirect()->route('product_index');
 	    }
     	return view('pages.auth.login');
     }
+    public function dashboard()
+    {
+    	return view('pages.dashboard');
+    }
 
    
 
     public function login(Request $request)
     {
+        
       $credentials = $request->validate([
             'email' => 'required|email',
             'password' =>'required'
@@ -47,7 +51,7 @@ class LoginController extends Controller
 			}
 			Auth::login($user, $remember_me);
 			Auth::user()->update(['last_login' => date("Y-m-d H:i:s")]);
-			return redirect()->route('product_index')->with('success', 'LoggedIn Successfully');
+			return redirect()->route('dashboard')->with('success', 'LoggedIn Successfully');
         }
         else
         {

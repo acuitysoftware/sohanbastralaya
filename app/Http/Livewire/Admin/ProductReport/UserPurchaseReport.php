@@ -20,18 +20,19 @@ use App\Http\Livewire\Traits\AlertMessage;
 class UserPurchaseReport extends Component
 {
     use AlertMessage;
+    use WithPagination;
 	public $perPage, $orderList=[],$product, $dateForm, $dateTo, $note, $date, $purchase_price, $total_price,$edit_note, $edit_date, $edit_purchase_price, $report_id;
-
+    protected $paginationTheme = 'bootstrap';
 	protected $listeners = ['deleteConfirm', 'changeStatus','deleteConfirmUsers','loadMore'];
 
 	public function mount()
 	{
-		$this->perPage =200; 
+		$this->perPage =env('PER_PAGE', 50); 
 	}
 
 	public function loadMore()
     {
-        $this->perPage= $this->perPage+200;
+        $this->perPage= $this->perPage+env('PER_PAGE', 50);
     }
 
     public function resetSearch()
