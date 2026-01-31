@@ -11,6 +11,7 @@ use App\Http\Controllers\Admin\{
     ProductController,
     ProductReportController,
     GodownController,
+    ImportController,
     ProductCartController,
     LoginDetailsController,
 };
@@ -75,6 +76,8 @@ Route::get('user-purchase-report',[ProductReportController::class,'userPurchaseR
 Route::get('products/add-to-cart',[ProductCartController::class,'addToCart'])->name('add_to_cart');
 
 
+Route::get('import',[ImportController::class,'import'])->name('import');
+Route::post('import',[ImportController::class,'importData'])->name('import.data');
 });
 });
 

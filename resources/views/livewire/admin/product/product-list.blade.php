@@ -458,11 +458,11 @@
                                     <label class="form-label">Item Code</label>
                                     <div class="input-group mb-3">
                                         <input type="text" class="form-control" placeholder="Item Code"
-                                            wire:model.defer="state.bar_code" disabled="disabled"
+                                            wire:model.defer="state.bar_code" onkeypress="return number_check(event);" maxlength="12"
                                             style="background: #fff;">
                                         <div class="input-group-append" style="cursor: pointer;">
                                             <span class="input-group-text" id="basic-addon2"
-                                                wire:click="generateBarCode('{{ $state['id'] }}')">{{ $state['bar_code'] ? 'View' : 'Generate' }}
+                                                wire:click="generateEditBarCode('{{ json_encode($state) }}')">{{ $state['bar_code'] ? 'View' : 'Generate' }}
                                                 Barcode</span>
                                         </div>
                                     </div>
@@ -555,31 +555,37 @@
                                 <tr>
                                     <th>Product Code :</th>
                                     <td>{{ @$viewProduct->product_code }}</td>
-                                    <th>Product Name :</th>
-                                    <td>{{ @$viewProduct->name }}</td>
+                                    <th>Item Code :</th>
+                                    <td>{{ @$viewProduct->bar_code }}</td>
+                                    
                                 </tr>
                                 <tr>
+                                    <th>Product Name :</th>
+                                    <td>{{ @$viewProduct->name }}</td>
                                     @if (Auth::user()->type == 'A')
                                         <th>Purchase Price :</th>
                                         <td>{{ @$viewProduct->purchase_price }}</td>
                                     @endif
-                                    <th>Selling Price</th>
-                                    <td>{{ @$viewProduct->selling_price }}</td>
+                                    
                                     {{-- <td>Available Quantity</td> --}}
                                 </tr>
                                 <tr>
+                                    <th>Selling Price</th>
+                                    <td>{{ @$viewProduct->selling_price }}</td>
                                     <th>Inserted Stock :</th>
                                     <td>{{ @$viewProduct->product_quantities_sum_quantity ?? 0 }}</td>
+                                    
+                                </tr>
+                                <tr>
                                     <th>Product Reduce :</th>
                                     <td>{{ @$viewProduct->product_reductions_sum_qty ?? 0 }}</td>
-                                </tr>
-                                <tr>
                                     <th>Return Quantity :</th>
                                     <td>{{ @$viewProduct->return_products_quantity_sum_qty ?? 0 }}</td>
-                                    <th>Available Quantity</th>
-                                    <td>{{ @$viewProduct->quantity ?? 0 }}</td>
+                                    
                                 </tr>
                                 <tr>
+                                    <th>Available Quantity</th>
+                                    <td>{{ @$viewProduct->quantity ?? 0 }}</td>
                                     <th>Sold Quantity :</th>
                                     <td>{{ @$viewProduct->product_orders_sum_qty ?? 0 }}</td>
                                 </tr>
@@ -868,6 +874,35 @@
                             <img src="data:image/png;base64,{{ DNS1D::getBarcodePNG($bar_code, 'C39') }}"
                                 alt="barcode" />
                             <label class="barcode_text">{{ $bar_code }}</label>
+                        @endif
+                    </div>
+
+
+
+
+
+                    <button type="button" onclick="printBarcode()" class="btn btn-primary">Print</button>
+                </div>
+            </div><!-- /.modal-content -->
+        </div><!-- /.modal-dialog -->
+    </div>
+    <div wire:ignore.self id="editBarcodeModal" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog"
+            style="    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 0 20px #00000054;">
+            <div class="modal-content">
+                <div class="modal-header modal-colored-header bg-primary">
+                    <h4 class="modal-title" id="primary-header-modalLabel">Barcode</h4>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-hidden="true"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="barcode_main_div">
+                        @if (isset($edit_bar_code))
+                            <label>Sohan Bastralaya</label>
+                            <img src="data:image/png;base64,{{ DNS1D::getBarcodePNG($edit_bar_code, 'C39') }}"
+                                alt="barcode" />
+                            <label class="barcode_text">{{ $edit_bar_code }}</label>
                         @endif
                     </div>
 
@@ -1303,7 +1338,7 @@
                             <div class="mb-3 col-md-6">
                                 <label class="form-label">Quantity</label>
                                 <input type="text" class="form-control" placeholder="Quantity"
-                                    onkeypress="return number_check(event);" wire:model.defer="quantity">
+                                    onkeypress="return number_check(event);" wire:model.defer="quantity"  wire:focus="inputFocused">
                                 @error('quantity')
                                     <span class="text-danger error">{{ $message }}</span>
                                 @enderror
@@ -1311,7 +1346,7 @@
                             <div class="mb-3 col-md-6">
                                 <label class="form-label">Quantity Alert</label>
                                 <input type="text" onkeypress="return number_check(event);" class="form-control"
-                                    placeholder="Quantity Alert" wire:model.defer="default_quantity">
+                                    placeholder="Quantity Alert" wire:model.defer="default_quantity" wire:focus="inputFocused">
                                 @error('default_quantity')
                                     <span class="text-danger error">{{ $message }}</span>
                                 @enderror
@@ -1319,7 +1354,7 @@
                             <div class="mb-3 col-md-6">
                                 <label class="form-label">Purchase Price</label>
                                 <input type="text" class="form-control" placeholder="Purchase Price"
-                                    wire:model.defer="purchase_price"
+                                    wire:model.defer="purchase_price" wire:focus="inputFocused"
                                     @if (isset($product_id)) readonly="" @endif>
                                 @error('purchase_price')
                                     <span class="text-danger error">{{ $message }}</span>
@@ -1328,20 +1363,19 @@
                             <div class="mb-3 col-md-6">
                                 <label class="form-label">Selling Price</label>
                                 <input type="text" class="form-control" placeholder="Selling Price"
-                                    wire:model.defer="selling_price"
+                                    wire:model.defer="selling_price" wire:focus="inputFocused"
                                     @if (isset($product_id)) readonly="" @endif>
                                 @error('selling_price')
                                     <span class="text-danger error">{{ $message }}</span>
                                 @enderror
                             </div>
 
-                            @if (isset($product_code))
                                 <div class="mb-3 col-md-6">
                                     <label class="form-label">Item Code</label>
                                     <div class="input-group mb-3">
                                         <input type="text" class="form-control" placeholder="Item Code"
-                                            wire:model.defer="bar_code" disabled="disabled"
-                                            style="background: #fff;">
+                                            wire:model.defer="bar_code" maxlength="12"
+                                            style="background: #fff;" wire:focus="inputFocused"  onkeypress="return number_check(event);">
                                         <div class="input-group-append" style="cursor: pointer;">
                                             <span class="input-group-text" id="basic-addon2"
                                                 wire:click="generateBarCode('{{ $product_id }}')">{{ $bar_code ? 'View' : 'Generate' }}
@@ -1353,7 +1387,6 @@
                                         <span class="text-danger error">{{ $message }}</span>
                                     @enderror
                                 </div>
-                            @endif
                             {{-- @if (isset($bar_code))
                     <div class="mb-3 col-md-6">
                         <img src="data:image/png;base64,{{DNS1D::getBarcodePNG($bar_code, 'C39')}}" alt="barcode" />
@@ -1363,7 +1396,7 @@
                                 <div class="mb-3">
                                     <label for="example-fileinput" class="form-label">Product Image</label>
                                     <input type="file" id="example-fileinput" class="form-control"
-                                        wire:model.defer="image" accept="image/*">
+                                        wire:model.defer="image" wire:focus="inputFocused" accept="image/*">
                                     @error('image')
                                         <span class="text-danger error">{{ $message }}</span>
                                     @enderror
@@ -1494,6 +1527,7 @@
                                 <th>SL No.</th>
                                 <th>Image</th>
                                 <th>Products Name</th>
+                                <th>Item Code</th>
                                 <th>Code</th>
                                 <th>Product Qty</th>
                                 <th>Qty</th>
@@ -1533,6 +1567,7 @@
                                             /* +$row->return_products_quantity_sum_qty */
                                         @endphp
                                         <td>{{ $row->name }}</td>
+                                        <td>{{ $row->bar_code }}</td>
                                         <td>{{ $row->product_code }}</td>
                                         <td>{{ $avl_qty }}</td>
 
@@ -1591,7 +1626,7 @@
                                 @endforeach
                             @else
                                 <tr>
-                                    <td colspan="9" class="text-center">No records available</td>
+                                    <td colspan="10" class="text-center">No records available</td>
                                 </tr>
                             @endif
                         </tbody>

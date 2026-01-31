@@ -77,7 +77,7 @@ class UploadProductImage extends Component
         {
             $name =$this->searchName;
            $productQuery = $productQuery->where(function($q) use($name){
-            $q ->where('name', 'like', '%' . $this->searchName . '%')->orWhere('product_code', 'like', '%' . $this->searchName . '%');
+            $q ->where('name', 'like', '%' . $name . '%')->orWhere('product_code', 'like', '%' . $name . '%')->orWhere('bar_code', 'like', '%' . $name . '%');
            });
           
         }

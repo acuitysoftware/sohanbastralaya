@@ -40,10 +40,11 @@ class ProductList extends Component
     protected $paginationTheme = 'bootstrap';
     public  $state=[], $viewProduct =[], $type='edit', $deleteIds=[];
     public $searchName, $name, $product_code, $quantity, $default_quantity, $purchase_price, $selling_price, $image, $storeUser,$productSearch =[], $gallery_image, $product_id, $cart_quantity=[], $discount=[], $cart_count,$perPage,$count_cart_item,$user_type, $store, $printProducts, $viewOrder, $setting, $formSubmit, $discount_product_id=[], $discount_amt, $discount_type,$is_discount=false, $edit_is_discount,$bar_code;
-    public  $order_id, $returnOrder, $product_name, $total_profit, $product_qty, $product_selling_price, $return_order_id;
+    public  $order_id, $returnOrder, $product_name, $total_profit, $product_qty, $product_selling_price, $return_order_id,$edit_bar_code;
 	protected $listeners = ['deleteConfirm', 'changeStatus', 'loadMore', 'viewProductData'];
     
 	public function generateBarCode($id){
+        $this->productSearch = [];
         if($this->storeUser == 1)
         {
             $this->state =[];
@@ -54,17 +55,17 @@ class ProductList extends Component
             $productData = Product2::find($id);
 
         }
-        if($productData->bar_code){
-
+        if($this->bar_code){
+            $this->dispatchBrowserEvent('view-barcode');
         }
         else{
 
             $bar_code = null;
             while (true) {
-                $numSeed = "0123467556789";
+                /* $numSeed = "0123467556789";
                 $shuffled = str_shuffle($numSeed);
-                $bar_code  =  substr($shuffled,1,13);
-                $bar_code = $bar_code;
+                $bar_code  =  substr($shuffled,1,13); */
+                $bar_code =  random_int(100000000000, 999999999999);
                 $oldData = Product::where('bar_code', $bar_code)->count();
                 if($oldData == 0)
                 {
@@ -72,13 +73,89 @@ class ProductList extends Component
                 }
             }
             
-            $productData->update(['bar_code' => $bar_code]);
+            
+            $this->bar_code = $bar_code;
+            //$productData->update(['bar_code' => $bar_code]);
         }
-        $this->bar_code = $productData->bar_code;
-        $this->dispatchBrowserEvent('view-barcode');
+        //$this->dispatchBrowserEvent('view-barcode');
        // $bar_code = $productData->bar_code;
        /*  $fileName = $bar_code.'.png';
         \File::put(storage_path(). '/app/public/bar_code/' . $fileName, base64_decode(DNS1D::getBarcodePNG($url, 'QRCODE'))); */
+    }
+	public function generateEditBarCode($id){
+        $this->state = json_decode($id, true);
+        //dd($this->state['id']);
+        /* if($this->storeUser == 1)
+        {
+            $this->state =[];
+            $editProduct = Product::withSum('productQuantities', 'quantity')->withSum('productOrders', 'qty')->withSum('returnProductsQuantity', 'qty')->find($this->state['id']);
+        }
+        else{
+            $this->state =[];
+            $editProduct = Product2::withSum('productQuantities', 'quantity')->withSum('productOrders', 'qty')->withSum('returnProductsQuantity', 'qty')->find($this->state['id']);
+
+        } */
+        if(isset($this->state['bar_code'])){
+            $this->edit_bar_code = $this->state['bar_code'];
+            $this->dispatchBrowserEvent('edit-view-barcode');
+        }
+        else{
+
+            $bar_code = null;
+            while (true) {
+                /* $numSeed = "0123467556789";
+                $shuffled = str_shuffle($numSeed);
+                $bar_code  =  substr($shuffled,1,13); */
+                $bar_code =  random_int(100000000000, 999999999999);
+                $oldData = Product::where('bar_code', $bar_code)->count();
+                if($oldData == 0)
+                {
+                    break;
+                }
+            }
+            $this->state['bar_code'] = $bar_code;
+            $this->state['id'] = $this->state['id'];
+            $this->state['name'] = $this->state['name'];
+            $this->state['product_code'] = $this->state['product_code'];
+            $this->state['current_quantity'] = $this->state['current_quantity'];
+            $this->state['default_quantity'] = $this->state['default_quantity'];
+            $this->state['selling_price'] = $this->state['selling_price'];
+            $this->state['purchase_price'] = $this->state['purchase_price'];
+            $this->state['is_discount'] = $this->state['is_discount'];
+            $this->edit_is_discount = $this->state['is_discount'];
+            $this->state['discount_type'] = $this->state['discount_type'];
+            $this->state['discount_amt'] = $this->state['discount_amt'];
+            $this->state['gallery_image'] = $this->state['gallery_image'];
+       
+            
+            //$productData->update(['bar_code' => $bar_code]);
+        }
+        
+        //dd($this->state);
+        //$this->dispatchBrowserEvent('view-barcode');
+       // $bar_code = $productData->bar_code;
+       /*  $fileName = $bar_code.'.png';
+        \File::put(storage_path(). '/app/public/bar_code/' . $fileName, base64_decode(DNS1D::getBarcodePNG($url, 'QRCODE'))); */
+    }
+    public function viewBarCode($id){
+        if($id){
+
+            if($this->storeUser == 1)
+            {
+                $this->state =[];
+                $productData = Product::find($id);
+            }
+            else{
+                $this->state =[];
+                $productData = Product2::find($id);
+    
+            }
+              $this->bar_code = $productData->bar_code;
+            $this->dispatchBrowserEvent('view-barcode');
+        }
+        else{
+            $this->showToastr("error",'Please add product', false);
+        }
     }
 	public function mount()
     {   
@@ -219,16 +296,19 @@ class ProductList extends Component
         }
         
     }
+    public function updatedQuantity($value){
+         $this->productSearch = [];
+    }
     public function updatedName($data)
     {
         //dd($data);
        if($data){
             if($this->storeUser == 1)
             {
-                $this->productSearch = Product::select('id', 'product_code', 'name')->where('name', 'like', '%' . $data . '%')->orWhere('product_code', 'like', '%' . $data . '%')->get();
+                $this->productSearch = Product::select('id', 'product_code', 'name')->where('name', 'like', '%' . $data . '%')->orWhere('product_code', 'like', '%' . $data . '%')->orWhere('bar_code', 'like', '%' . $data . '%')->get();
             }
             else{
-                $this->productSearch = Product2::select('id', 'product_code', 'name')->where('name', 'like', '%' . $data . '%')->orWhere('product_code', 'like', '%' . $data . '%')->get();
+                $this->productSearch = Product2::select('id', 'product_code', 'name')->where('name', 'like', '%' . $data . '%')->orWhere('product_code', 'like', '%' . $data . '%')->orWhere('bar_code', 'like', '%' . $data . '%')->get();
 
             }
         }
@@ -316,16 +396,30 @@ class ProductList extends Component
             $this->state['discount_type'] = null;
         }
     }
+    public function inputFocused()
+{
+    $this->productSearch = [];
+}
     public function save()
     {
+        
         /*dd($this);*/
         if($this->product_id)
         {
+             if($this->storeUser == 1)
+        {
+            $updateProduct = Product::find($this->product_id);
+            }
+            else{
+                
+                $updateProduct = Product2::find($this->product_id);
+        }
             $this->validate([
-                'name' => 'required',
+                'name' => 'required|unique:st_product,name,'.$updateProduct->id,
                 'discount_type' => 'required_if:is_discount,1',
                 'discount_amt' => 'required_if:is_discount,1|max:10',
-                /*'product_code' => 'required|regex:/^[A-Z]{6,6}$/|unique:st_product,product_code,'.$updateProduct->id,*/
+                'bar_code' => 'required|unique:st_product,bar_code,'.$updateProduct->id,
+                /* 'bar_code' => 'required|digits:12|regex:/^[A-Z]{6,6}$/|unique:st_product,bar_code,'.$updateProduct->id, */
                 'quantity' => 'required',
                /* 'discount_type' => 'required_if:is_discount,==,For 1',*/
                 'default_quantity' => 'required',
@@ -383,7 +477,7 @@ class ProductList extends Component
             'is_discount' => $this->is_discount,
             'discount_type' => $this->discount_type,
             'discount_amt' => $this->discount_amt,
-            /*'product_code' => $this->product_code,*/
+            'bar_code' => $this->bar_code,
             'quantity' => ($updateProduct->quantity+$this->quantity),
             'default_quantity' => $this->default_quantity,
             /*'selling_price' => $this->selling_price,
@@ -429,7 +523,7 @@ class ProductList extends Component
             'is_discount' => $this->is_discount,
             'discount_type' => $this->discount_type,
             'discount_amt' => $this->discount_amt,
-            /*'product_code' => $this->product_code,*/
+            'bar_code' => $this->bar_code,
             'quantity' => ($updateProduct->quantity+$this->quantity),
             'default_quantity' => $this->default_quantity,
             /*'selling_price' => $this->selling_price,
@@ -473,10 +567,10 @@ class ProductList extends Component
         {
             
             $this->validate([
-                'name' => 'required',
+                'name' => 'required|unique:st_product',
                 'discount_type' => 'required_if:is_discount,true',
                 'discount_amt' => 'required_if:is_discount,true',
-                /*'product_code' => 'required|regex:/^[A-Z]{6,6}$/|unique:st_product',*/
+                'bar_code' => 'required|unique:st_product',
                 'quantity' => 'required',
                 'default_quantity' => 'required',
                 'purchase_price' => 'required|numeric',
@@ -518,7 +612,7 @@ class ProductList extends Component
             //dd($this->formSubmit);
             if($this->storeUser == 1)
             {
-                $barCode = null;
+                /* $barCode = null;
                 while (true) {
                     $numSeed = "0123456789";
                     $shuffled = str_shuffle($numSeed);
@@ -529,7 +623,7 @@ class ProductList extends Component
                     {
                         break;
                     }
-                }
+                } */
                 while (true) {
                     $numSeed = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
                         $shuffled = str_shuffle($numSeed);
@@ -552,7 +646,7 @@ class ProductList extends Component
                     'discount_type' => $this->discount_type,
                     'discount_amt' => $this->discount_amt,
                     'product_code' => $code,
-                    'bar_code' => $barCode,
+                    'bar_code' => $this->bar_code,
                     'quantity' => $this->quantity,
                     'default_quantity' => $this->default_quantity,
                     'selling_price' => $this->selling_price,
@@ -616,7 +710,7 @@ class ProductList extends Component
                     'discount_type' => $this->discount_type,
                     'discount_amt' => $this->discount_amt,
                     'product_code' => $code,
-                    'bar_code' => $barCode,
+                    'bar_code' => $this->bar_code,
                     'quantity' => $this->quantity,
                     'default_quantity' => $this->default_quantity,
                     'selling_price' => $this->selling_price,
@@ -861,10 +955,18 @@ class ProductList extends Component
 
     public function updateProduct()
     {
+        if ($this->storeUser == 1)
+        {
+            $updateProduct = Product::find($this->state['id']);
+            }else{
+                
+                $updateProduct = Product2::find($this->state['id']);
+        }
         Validator::make($this->state,[
-            'name' => 'required',
+            'name' => 'required|unique:st_product,bar_code,'.$updateProduct->id,
             'discount_type' => 'required_if:edit_is_discount,true',
             'discount_amt' => 'required_if:edit_is_discount,true|max:10',
+            'bar_code' => 'required|unique:st_product,bar_code,'.$updateProduct->id,
             /*'product_code' => 'required|regex:/^[A-Z]{6,6}$/|unique:st_product,product_code,'.$updateProduct->id,*/
             'quantity' => 'nullable',
             'default_quantity' => 'required',
@@ -979,6 +1081,7 @@ class ProductList extends Component
                 'is_discount' => $this->edit_is_discount,
                 'discount_type' => $this->state['discount_type'],
                 'discount_amt' => $this->state['discount_amt'],
+                'bar_code' => $this->state['bar_code'],
                 /*'product_code' => $this->state['product_code'],*/
                 'default_quantity' => $this->state['default_quantity'],
                 'quantity' => $available_quantity,
@@ -1061,6 +1164,7 @@ class ProductList extends Component
                 'is_discount' => $this->edit_is_discount,
                 'discount_type' => $this->state['discount_type'],
                 'discount_amt' => $this->state['discount_amt'],
+                'bar_code' => $this->state['bar_code'],
                 /*'product_code' => $this->state['product_code'],*/
                 'default_quantity' => $this->state['default_quantity'],
                 'quantity' => $available_quantity,

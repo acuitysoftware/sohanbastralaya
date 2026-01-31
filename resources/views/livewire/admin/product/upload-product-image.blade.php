@@ -52,6 +52,10 @@
                                     </select>
                                 </div>
                             </div>
+                            <div class="col-auto">
+                                <label for="inputPassword2" class="visually-hidden">Search</label>
+                                <input type="search" class="form-control" id="inputPassword2"  wire:model="searchName" placeholder="Search...">
+                            </div>
                         </form>   
                         @endif                         
                     </div>
@@ -73,14 +77,7 @@
                             <div id="loader" class="center" ></div>
                         </div> 
                     </div>
-                    <div class="col-xl-4">
-                        <div class="row gy-2 gx-2 align-items-center justify-content-xl-end">
-                            <div class="col-auto">
-                                <label for="inputPassword2" class="visually-hidden">Search</label>
-                                <input type="search" class="form-control" id="inputPassword2" wire:model="searchName" placeholder="Search...">
-                            </div>                                                
-                        </div>
-                    </div><!-- end col-->
+                    
                 </div>
 
 
@@ -93,6 +90,7 @@
                                 <th>SL No.</th>
                                 <th>Image</th>
                                 <th>Products Name</th>
+                                <th>Item Code</th>
                                 <th>Code</th>
                                 <th>Product Qty</th>
                                 <th>Selling Price</th>
@@ -119,6 +117,7 @@
                                     @endif
                                 </td>
                                 <td>{{$row->name}}</td>
+                                <td>{{$row->bar_code}}</td>
                                 <td>{{$row->product_code}}</td>
                                 <td>{{$row->quantity}}</td>                                                    
                                 <td>{{$row->selling_price}}</td>

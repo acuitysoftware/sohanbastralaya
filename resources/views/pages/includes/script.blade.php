@@ -11,6 +11,9 @@ window.addEventListener('show-user-add-form', event => {
 window.addEventListener('view-barcode', event => {
             $('#barcodeModal').modal('show');
         });
+window.addEventListener('edit-view-barcode', event => {
+            $('#editBarcodeModal').modal('show');
+        });
 window.addEventListener('show-user-access-menu', event => {
             $('#userAccessMenu').modal('show');
         });

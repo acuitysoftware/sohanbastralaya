@@ -61,6 +61,7 @@
                                 <th>SL No.</th>
                                 <th>Image</th>
                                 <th>Products Name</th>
+                                <th>Item Code</th>
                                 <th>Code</th>
                                 <th>Total Qty</th>
                                {{--  <th>Available Qty</th> --}}
@@ -92,6 +93,7 @@
                                     @endif
                                 </td>
                                 <td>{{$row->name}}</td>
+                                <td>{{$row->bar_code}}</td>
                                 <td>{{$row->product_code}}</td>
                                 <td>{{$row->product_quantities_sum_quantity}}</td>
                              {{--    <td>{{$row->quantity?$row->quantity:'Out of Stock'}}</td>  --}}

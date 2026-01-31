@@ -72,7 +72,10 @@ class OutofStockProductList extends Component
             $productQuery = Product2::withSum('productQuantities','quantity')->where('quantity', 0);
     	if ($this->searchName)
     	{
-           $productQuery = $productQuery->where('name', 'like', '%' . $this->searchName . '%')->orWhere('product_code', 'like', '%' . $this->searchName . '%');
+           $name =$this->searchName;
+           $productQuery = $productQuery->where(function($q) use($name){
+            $q ->where('name', 'like', '%' . $name . '%')->orWhere('product_code', 'like', '%' . $name . '%')->orWhere('bar_code', 'like', '%' . $name . '%');
+           });
     	}
         
     	return view('livewire.admin.product.outof-stock-product-list', [
