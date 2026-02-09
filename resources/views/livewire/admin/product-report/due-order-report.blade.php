@@ -10,34 +10,6 @@
         $total_product_selling_price = 0;
         $discount_perctg = 0;
     @endphp
-    @php
-        function convert_numbers_to_indian_format($number)
-        {
-            $formattedAmount = number_format($number);
-            $decimal = (string) ($number - floor($number));
-            $money = floor($number);
-            $length = strlen($money);
-            $delimiter = '';
-            $money = strrev($money);
-            for ($i = 0; $i < $length; $i++) {
-                if (($i == 3 || ($i > 3 && ($i - 1) % 2 == 0)) && $i != $length) {
-                    $delimiter .= ',';
-                }
-                $delimiter .= $money[$i];
-            }
-
-            $formattedAmount = strrev($delimiter);
-            $decimal = preg_replace('/0\./i', '.', $decimal);
-            $decimal = substr($decimal, 0, 3);
-
-            if ($decimal != '0') {
-                $formattedAmount = $formattedAmount . $decimal;
-            } else {
-                $formattedAmount = $formattedAmount . '.00';
-            }
-            return $formattedAmount;
-        }
-    @endphp
 
     <div class="col-12">
         <div class="card">
@@ -113,7 +85,6 @@
                             <tr>
                                 <th>Order ID</th>
                                 <th>Customer Name</th>
-                                <th>Billing User</th>
                                 <th>Customer Phone</th>
                                 {{-- <th>Customer Email</th>         --}}
                                 <th>Order Date</th>
@@ -124,17 +95,17 @@
                                     <th>Profit</th>
                                 @endif
                                 <th>Discount Amount</th>
-                                <th style="width: 112px;">Action</th>
+                                <th style="width: 72px;">Action</th>
                             </tr>
 
                         </thead>
                         <tbody>
                             @if (count($orders) > 0)
                                 @foreach ($orders as $key => $row)
-                                    <tr class="{{ $row->due_amount == 0 ? '' : 'order_list' }}">
+                                    <tr>
                                         <td>{{ $row->order_id }}</td>
                                         <td>{{ $row->customer_name }}</td>
-                                        <td>{{ $row->user ? $row->user->name : '' }}</td>
+                                       {{--  <td>{{ $row->user ? $row->user->name : '' }}</td> --}}
                                         <td>{{ $row->customer_phone ? $row->customer_phone : '' }}</td>
                                         {{-- <td>{{$row->customer_email}}</td> --}}
                                         <td>{{ date('d/m/Y h:i', strtotime($row->order_time)) }}</td>
@@ -159,73 +130,51 @@
                                                     : $row->discount_percent; */
 
                                         @endphp
-                                        <td>{{ env('CURRENCY', '₹') }}{{ convert_numbers_to_indian_format($row->total_amount) }}
-                                        </td>
-                                        <td>{{ env('CURRENCY', '₹') }}{{ convert_numbers_to_indian_format($row->due_amount) }}
-                                        </td>
-                                        <td>{{ env('CURRENCY', '₹') }}{{ convert_numbers_to_indian_format($row->collected_amount) }}
-                                        </td>
+                                        <td>{{env('CURRENCY','₹')}}{{ number_format($row->total_amount, 2) }}</td>
+                                        <td>{{env('CURRENCY','₹')}}{{ number_format($row->due_amount, 2) }}</td>
+                                        <td>{{env('CURRENCY','₹')}}{{ number_format($row->collected_amount, 2) }}</td>
 
                                         @if (Auth::user()->type == 'A')
-                                            <td>{{ env('CURRENCY', '₹') }}{{ convert_numbers_to_indian_format($profit) }}
-                                            </td>
+                                            <td>{{env('CURRENCY','₹')}}{{ number_format($profit, 2) }}</td>
                                         @endif
-                                        <td>{{ env('CURRENCY', '₹') }}{{ $row->discount_type == 'dis_amt' ? $row->discount_amt : $row->discount_percent }}
+                                        <td>{{env('CURRENCY','₹')}}{{ $row->discount_type == 'dis_amt' ? $row->discount_amt : $row->discount_percent }}
                                         </td>
                                         <td>
-                                            {{-- <td style="white-space: nowrap; width:100px;" > --}}
                                             @if ($user->type == 'A')
                                                 <a href="javascript:void(0);" title="View" class="action-icon"
                                                     wire:click="viewOrders({{ $row->id }})"><i
                                                         class="mdi mdi-eye"></i></a>
-                                                <a href="javascript:void(0);" class="action-icon" title="Delete"
+                                                {{-- <a href="javascript:void(0);" class="action-icon" title="Delete"
                                                     wire:click="deleteAttempt({{ $row->id }})"><i
-                                                        class="mdi mdi-delete"></i></a>
+                                                        class="mdi mdi-delete"></i></a> --}}
                                                 @if ($row->due_payments_count > 0)
-                                                    <a href="javascript:void(0);" class="action-icon" title="Due Amount"
+                                                    <a href="javascript:void(0);" class="action-icon" title="Delete"
                                                         wire:click="viewDueData({{ $row->id }})"><i
                                                             class="mdi mdi-account-cash"></i></a>
                                                 @endif
                                             @endif
+                                           
                                             @if (in_array('order-view', Auth::user()->permissions()->pluck('permission')->toArray()))
                                                 <a href="javascript:void(0);" title="View" class="action-icon"
                                                     wire:click="viewOrders({{ $row->id }})"><i
                                                         class="mdi mdi-eye"></i></a>
-                                                @if ($row->due_payments_count > 0)
+                                                        @if ($row->due_payments_count > 0)
                                                     <a href="javascript:void(0);" class="action-icon" title="Due Amount"
                                                         wire:click="viewDueData({{ $row->id }})"><i
                                                             class="mdi mdi-account-cash"></i></a>
                                                 @endif
                                             @endif
-                                            @if (in_array('order-delete', Auth::user()->permissions()->pluck('permission')->toArray()))
+                                            {{-- @if (in_array('order-delete', Auth::user()->permissions()->pluck('permission')->toArray()))
                                                 <a href="javascript:void(0);" class="action-icon" title="Delete"
                                                     wire:click="deleteAttempt({{ $row->id }})"><i
                                                         class="mdi mdi-delete"></i></a>
-                                            @endif
+                                            @endif --}}
                                         </td>
                                     </tr>
                                 @endforeach
-                                <tr>
-                                    <td colspan="5">Total</td>
-                                    <td colspan="1">
-                                        {{ env('CURRENCY', '₹') }}{{ convert_numbers_to_indian_format($total_selling) }}
-                                    </td>
-                                    <td colspan="1">
-                                        {{ env('CURRENCY', '₹') }}{{ convert_numbers_to_indian_format($total_due_amount) }}
-                                    </td>
-                                    <td colspan="1">
-                                        {{ env('CURRENCY', '₹') }}{{ convert_numbers_to_indian_format($total_collected_amount) }}
-                                    </td>
-                                    <td colspan="1">
-                                        {{ env('CURRENCY', '₹') }}{{ convert_numbers_to_indian_format($total_profit) }}
-                                    </td>
-                                    <td colspan="2">
-                                        {{ env('CURRENCY', '₹') }}{{ convert_numbers_to_indian_format($total_discount) }}
-                                    </td>
-                                </tr>
                             @else
                                 <tr>
-                                    <td colspan="11" class="text-center">No records available</td>
+                                    <td colspan="10" class="text-center">No records available</td>
                                 </tr>
                             @endif
                             @php
@@ -245,7 +194,7 @@
             </div> <!-- end card-body -->
         </div> <!-- end card -->
     </div><!-- end col -->
-    <div class="col-12">
+    {{-- <div class="col-12">
         <div class="card">
             <div class="card-body">
                 <div class="table-responsive">
@@ -255,55 +204,33 @@
 
                                 <tr>
                                     <th>Total Sales :</th>
-                                    <th>{{ env('CURRENCY', '₹') }}{{ convert_numbers_to_indian_format(@$sales->total_sales) }}
-                                    </th>
+                                    <td>Rs {{ number_format($total_selling, 2) }} </td>
                                 </tr>
                                 <tr>
                                     <th>Due Amt :</th>
-                                    <th>{{ env('CURRENCY', '₹') }}{{ convert_numbers_to_indian_format(@$sales->total_due_amount) }}
-                                    </th>
+                                    <td>Rs {{ number_format($total_due_amount, 2) }} </td>
                                 </tr>
                                 <tr>
                                     <th>Collected Amt :</th>
-                                    <th>{{ env('CURRENCY', '₹') }}{{ convert_numbers_to_indian_format(@$sales->total_collected_amount) }}
-                                    </th>
+                                    <td>Rs {{ number_format($total_collected_amount, 2) }} </td>
                                 </tr>
                                 @if (Auth::user()->type == 'A')
-                                @php
-                                    $discount_percentage =0;
-                                    $profit_percentage =0;
-                                    $total_profits = ($sales2->total_profit-@$sales2->total_discount_amount);
-                                    $total_sales = $sales->total_sales;
-                                    $total_discount = $sales2->total_discount_amount;
-                                    $total_product_selling_prices = $sales->total_product_selling_price;
-                                        if ($total_profits > 0 && $total_sales > 0) {
-                                            $profit_percentage = ($total_profits / $total_sales) * 100;
-                                        }
-
-                                        if ($total_discount > 0 && $total_product_selling_prices > 0) {
-                                            $discount_percentage = ($total_discount / $total_product_selling_prices) * 100;
-                                        }
-                                    @endphp
                                     <tr>
                                         <th>Net Profit:</th>
-                                        <th>{{ env('CURRENCY', '₹') }}{{ convert_numbers_to_indian_format(@$total_profits) }}
-                                        </th>
+                                        <td>Rs {{ number_format($total_profit, 2) }}</td>
                                     </tr>
                                     <tr>
                                         <th>Total Discount:</th>
-                                        <th>{{ env('CURRENCY', '₹') }}{{ convert_numbers_to_indian_format(@$sales2->total_discount_amount) }}
-                                        </th>
+                                        <td>Rs {{ number_format(@$total_discount, 2) }}</td>
                                     </tr>
-
-                                    
 
                                     <tr>
                                         <th> Discount %:</th>
-                                        <th> {{ convert_numbers_to_indian_format($discount_percentage) }}%</th>
+                                        <td> {{ number_format($discount_perctg, 2) }}%</td>
                                     </tr>
                                     <tr>
                                         <th>Profit %:</th>
-                                        <th> {{ convert_numbers_to_indian_format($profit_percentage) }}%</th>
+                                        <td> {{ number_format($profit_perctg, 2) }}%</td>
                                     </tr>
                                 @endif
                             </tbody>
@@ -312,7 +239,8 @@
                 </div>
             </div> <!-- end card-body -->
         </div> <!-- end card -->
-    </div><!-- end col -->
+    </div> --}}
+    <!-- end col -->
     <div wire:ignore.self id="viewDueAmountModal" data-backdrop="static" data-keyboard="false" class="modal fade"
         tabindex="-1" role="dialog" aria-labelledby="return-modalLabel" aria-hidden="true"
         style="z-index: 999999;">
@@ -340,17 +268,14 @@
                             <tr>
                                 <td>{{ @$viewDueOrderDetails->customer_name }}</td>
                                 <td>{{ @$viewDueOrderDetails->customer_phone }}</td>
-                                <td>{{ env('CURRENCY', '₹') }}{{ @$viewDueOrderDetails->total_amount }}</td>
+                                <td>{{env('CURRENCY','₹')}}{{ @$viewDueOrderDetails->total_amount }}</td>
                                 <td>{{ date('d/m/Y', strtotime(@$viewDueOrderDetails->order_date)) }}</td>
                             </tr>
 
 
                         </tbody>
                     </table>
-                    <span class="badge badge-outline-danger p-1 font-16 mb-1 ms-2">Order Id -
-                        {{ @$viewDueOrderDetails->order_id }}</span>
                 </div>
-
                 @if (isset($viewDueOrderDetails) && count(@$viewDueOrderDetails->due_payments))
                     <div class="table-responsive">
                         <table class="table table-bordered table-centered w-100 dt-responsive nowrap"
@@ -368,22 +293,14 @@
                                 </tr>
                             </thead>
                             <tbody>
-
                                 @foreach ($viewDueOrderDetails->due_payments as $details)
                                     <tr>
                                         <td>{{ date('d/m/Y', strtotime(@$details->date)) }}</td>
-                                        <td>{{ env('CURRENCY', '₹') }}{{ @$details->total_amount }}</td>
-                                        <td>{{ env('CURRENCY', '₹') }}{{ @$details->collected_amount }}</td>
-                                        <td>{{ env('CURRENCY', '₹') }}{{ @$details->due_amount }}</td>
+                                        <td>{{env('CURRENCY','₹')}}{{ @$details->total_amount }}</td>
+                                        <td>{{env('CURRENCY','₹')}}{{ @$details->collected_amount }}</td>
+                                        <td>{{env('CURRENCY','₹')}}{{ @$details->due_amount }}</td>
                                     </tr>
                                 @endforeach
-                                <tr>
-                                    <td colspan="2">Total</td>
-                                    <td>{{ env('CURRENCY', '₹') }}{{ @convert_numbers_to_indian_format($viewDueOrderDetails->collected_amount, 2) }}
-                                    </td>
-                                    <td>{{ env('CURRENCY', '₹') }}{{ @convert_numbers_to_indian_format($viewDueOrderDetails->due_amount, 2) }}
-                                    </td>
-                                </tr>
 
 
                             </tbody>
@@ -394,7 +311,8 @@
                     <form wire:submit.prevent="saveDueAmount">
                         <input type="hidden" wire:model.defer="state.id">
                         <div class="modal-body">
-
+                            <span class="badge badge-outline-danger p-1 font-16 mb-1">Order Id -
+                                {{ @$viewDueOrderDetails->order_id }}</span>
                             <div class="row mt-2">
                                 <div class="mb-3 col-md-6">
                                     <label class="form-label">Total Amount</label>
@@ -415,9 +333,8 @@
 
                                 <div class="mb-3 col-md-6">
                                     <label class="form-label">Pay Amount</label>
-                                    <input type="text" class="form-control from-amount" placeholder="Pay Amount"
-                                        wire:model.defer="state.pay_amount"
-                                        onkeypress="return decimal_number_check(event);">
+                                    <input type="text" class="form-control" placeholder="Pay Amount"
+                                        wire:model.defer="state.pay_amount">
                                     @error('pay_amount')
                                         <span class="text-danger error">{{ $message }}</span>
                                     @enderror
@@ -594,7 +511,7 @@
                                                                 {{ $product->selling_price }}
                                                             </td>
                                                             <td style="text-align: right; padding: 5px 0px; ">
-                                                                {{ convert_numbers_to_indian_format($product->selling_price * $product->qty) }}
+                                                                {{ number_format($product->selling_price * $product->qty, 2) }}
                                                             </td>
                                                             @php
                                                                 $sub_total += $product->selling_price * $product->qty;
@@ -614,7 +531,7 @@
                                                     </td>
                                                     <td
                                                         style="text-align: right; padding: 7px 0px; border-top: 1px dashed #ccc; border-bottom: 1px dashed #ccc;">
-                                                        {{ convert_numbers_to_indian_format(@$sub_total) }}
+                                                        {{ number_format(@$sub_total, 2) }}
                                                     </td>
                                                 </tr>
                                                 <tr>
@@ -632,7 +549,7 @@
 @else
 {{ @$viewOrder->perctge_amt }}
 @endif   -->
-                                                        {{ convert_numbers_to_indian_format($discount) }}
+                                                        {{ number_format($discount, 2) }}
                                                     </td>
                                                 </tr>
                                                 @if (isset($viewOrder) && count($viewOrder->productDetails) > 0)
@@ -648,7 +565,7 @@
                                                             </td>
                                                             <td
                                                                 style="text-align: right; padding: 7px 0px; border-top: 1px dashed #ccc; border-bottom: 1px dashed #ccc;">
-                                                                {{ convert_numbers_to_indian_format(@$viewOrder->wallet_discount) }}
+                                                                {{ number_format(@$viewOrder->wallet_discount, 2) }}
                                                             </td>
                                                         </tr>
                                                     @endif
@@ -667,7 +584,7 @@
                                                             </td>
                                                             <td
                                                                 style="text-align: right; padding: 7px 0px; border-top: 1px dashed #ccc; border-bottom: 1px dashed #ccc;">
-                                                                {{ convert_numbers_to_indian_format(@$viewOrder->return_amt) }}
+                                                                {{ number_format(@$viewOrder->return_amt, 2) }}
                                                             </td>
                                                         </tr>
                                                     @endif
@@ -679,7 +596,7 @@
                                 </tr>
                                 <tr>
                                     <td>
-                                        <table style="width: 100%; border-spacing: 0px; margin-bottom0px;">
+                                        <table style="width: 100%; border-spacing: 0px; margin-bottom: 20px;">
                                             <tbody>
                                                 <tr>
                                                     <td style="font-size: 15px; color: #000; padding: 7px 0px;  border-bottom: 1px dashed #ccc;"
@@ -691,7 +608,7 @@
 @else
 0.00
 @endif -->
-                                                        {{ convert_numbers_to_indian_format($sub_total - ($discount + (float) @$viewOrder->wallet_discount + @$viewOrder->return_amt)) }}
+                                                        {{ number_format($sub_total - ($discount + (float) @$viewOrder->wallet_discount + @$viewOrder->return_amt), 2) }}
                                                     </td>
                                                 </tr>
                                                 @if (@$viewOrder->due_payments_count > 0)
@@ -704,7 +621,7 @@
 @else
 0.00
 @endif -->
-                                                            {{ convert_numbers_to_indian_format(@$viewOrder->due_amount) }}
+                                                            {{ number_format(@$viewOrder->due_amount, 2) }}
                                                         </td>
                                                     </tr>
 
@@ -717,7 +634,7 @@
 @else
 0.00
 @endif -->
-                                                            {{ convert_numbers_to_indian_format(@$viewOrder->collected_amount) }}
+                                                            {{ number_format(@$viewOrder->collected_amount, 2) }}
                                                         </td>
                                                     </tr>
                                                 @endif
@@ -752,7 +669,6 @@
                                 <tr>
                                     <th>Product Name</th>
                                     <th>Code</th>
-                                    <th>Item Code</th>
                                     @if (Auth::user()->type == 'A')
                                         <th>Purchase Price</th>
                                     @endif
@@ -776,23 +692,19 @@
                                             <tr>
                                                 <td>{{ @$orderDetails->product_name }}</td>
                                                 <td>{{ @$orderDetails->product_code }}</td>
-                                                <td>{{ @$orderDetails->product ? $orderDetails->product->bar_code : '' }}
-                                                </td>
                                                 @if (Auth::user()->type == 'A')
-                                                    <td>{{ env('CURRENCY', '₹') }}{{ @$orderDetails->purchase_price }}
-                                                    </td>
+                                                    <td>{{ @$orderDetails->purchase_price }}</td>
                                                 @endif
-                                                <td>{{ env('CURRENCY', '₹') }}{{ @$orderDetails->selling_price }}</td>
-                                                <td>{{ env('CURRENCY', '₹') }}{{ @$orderDetails->discount }}</td>
-                                                <td>{{ env('CURRENCY', '₹') }}{{ convert_numbers_to_indian_format(@$orderDetails->selling_price - @$orderDetails->discount) }}
+                                                <td>{{ @$orderDetails->selling_price }}</td>
+                                                <td>{{ @$orderDetails->discount }}</td>
+                                                <td>{{ number_format(@$orderDetails->selling_price - @$orderDetails->discount, 2) }}
                                                 </td>
                                                 @if (Auth::user()->type == 'A')
-                                                    <td>{{ env('CURRENCY', '₹') }}{{ convert_numbers_to_indian_format(@$orderDetails->profit) }}
-                                                    </td>
+                                                    <td>{{ number_format(@$orderDetails->profit, 2) }}</td>
                                                     <td>{{ @$orderDetails->profit_percentage }}%</td>
                                                 @endif
                                                 <td>{{ @$orderDetails->qty }}</td>
-                                                <td>{{ env('CURRENCY', '₹') }}{{ convert_numbers_to_indian_format(@$orderDetails->subtotal - @$orderDetails->total_discount) }}
+                                                <td>{{ number_format(@$orderDetails->subtotal - @$orderDetails->total_discount, 2) }}
                                                 </td>
                                                 <td><button type="button" class="btn btn-warning"
                                                         wire:click="returnOrder({{ $orderDetails->id }})">Return</button>
@@ -821,7 +733,6 @@
                                         <tr>
                                             <th>Product Name</th>
                                             <th>Code</th>
-                                            <th>Item Code</th>
                                             <th>Selling Price</th>
                                             <th>Discount</th>
                                             <th>Price</th>
@@ -835,14 +746,11 @@
                                             <tr>
                                                 <td>{{ @$details->product_name }}</td>
                                                 <td>{{ @$details->product_code }}</td>
-                                                <td>{{ @$orderDetails->product ? $orderDetails->product->bar_code : '' }}
-                                                </td>
-                                                <td>{{ env('CURRENCY', '₹') }}{{ @$details->selling_price }}</td>
-                                                <td>{{ env('CURRENCY', '₹') }}{{ @$details->discount }}</td>
-                                                <td>{{ env('CURRENCY', '₹') }}{{ @$details->selling_price - @$details->discount }}
-                                                </td>
+                                                <td>{{ @$details->selling_price }}</td>
+                                                <td>{{ @$details->discount }}</td>
+                                                <td>{{ @$details->selling_price - @$details->discount }}</td>
                                                 <td>{{ @$details->qty }}</td>
-                                                <td>{{ env('CURRENCY', '₹') }}{{ convert_numbers_to_indian_format(@$details->selling_price * @$details->qty) }}
+                                                <td>{{ number_format(@$details->selling_price * @$details->qty, 2) }}
                                                 </td>
                                             </tr>
                                         @endforeach
@@ -926,8 +834,7 @@
                             <p style="margin: 5px 0px; font-size: 16px; color: #000;">Pin 743347</p>
                             <p style="margin: 5px 0px; font-size: 16px; color: #000;">Phone:
                                 {{ $setting->contact_no }}</p>
-                            <p style="margin: 5px 0px; font-size: 15px; color: #000;">Email:
-                                {{ $setting->site_mail }}
+                            <p style="margin: 5px 0px; font-size: 15px; color: #000;">Email: {{ $setting->site_mail }}
                             </p>
                             <p style="margin: 5px 0px; font-size: 15px; color: #000; text-transform: uppercase;">RETURN
                                 BILL </p>
@@ -942,8 +849,7 @@
                             <p style="margin: 5px 0px; font-size: 16px; color: #000;">Pin 743347</p>
                             <p style="margin: 5px 0px; font-size: 16px; color: #000;">Phone:
                                 {{ $setting->contact_no }}</p>
-                            <p style="margin: 5px 0px; font-size: 15px; color: #000;">Email:
-                                {{ $setting->site_mail }}
+                            <p style="margin: 5px 0px; font-size: 15px; color: #000;">Email: {{ $setting->site_mail }}
                             </p>
                             <p style="margin: 5px 0px; font-size: 15px; color: #000; text-transform: uppercase;">RETURN
                                 BILL </p>
@@ -1073,7 +979,7 @@
                 </tr>
                 <tr>
                     <td>
-                        <table style="width: 100%; border-spacing: 0px; margin-bottom0px;">
+                        <table style="width: 100%; border-spacing: 0px; margin-bottom: 20px;">
                             <tbody>
                                 <tr>
                                     <td style="font-size: 15px; color: #000; padding: 7px 0px;  border-bottom: 1px dashed #ccc;"

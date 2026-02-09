@@ -22,7 +22,7 @@ class UploadProductImage extends Component
 	use WithPagination, WithFileUploads;
     use WithSorting;
     use AlertMessage;
-    public  $state=[], $type='edit', $deleteIds=[],$perPage;
+    public  $state=[], $type='edit', $deleteIds=[],$perPage, $gallery_images=[];
     public $searchName, $storeUser;
 	protected $listeners = ['deleteConfirm', 'changeStatus','deleteConfirmUsers','loadMore'];
     protected $paginationTheme = 'bootstrap';
@@ -66,20 +66,67 @@ class UploadProductImage extends Component
        
     }
 
+    public function deleteConfirm($id)
+    {
+       // dd($id);
+        if ($this->storeUser == 1)
+            $img = Gallery::find($id);
+        else
+            $img = Gallery2::find($id);
+        //dd($img);
+
+        if(isset($img[0])){
+
+            if(isset($img[0]->gallery_image))
+            {
+                @unlink(storage_path('app/public/' .$img[0]->gallery_image));
+            }
+            $img[0]->delete();
+            $msgAction = "Image has been deleted successfully";
+            if ($this->storeUser == 1)
+                $product = Product::with('gallery')->find($img[0]->product_id);
+            else
+                $product = Product2::with('gallery')->find($img[0]->product_id);
+
+            $this->state['product_id'] = $product->id;
+            $this->gallery_images = $product->gallery()->get();
+            $this->showToastr("success",$msgAction, false);
+        }
+    }
+    public function deleteAttempt($id)
+    {
+         if ($this->storeUser == 1)
+            $img = Gallery::find($id);
+        else
+            $img = Gallery2::find($id);
+
+        if ($this->storeUser == 1)
+            $product = Product::with('gallery')->find($img->product_id);
+        else
+            $product = Product2::with('gallery')->find($img->product_id);
+
+        $this->state['product_id'] = $product->id;
+        $this->gallery_images = $product->gallery()->get();
+        $this->showConfirmation("warning", 'Are you sure?', "You won't be able to recover this image!", 'Yes, delete!', 'deleteConfirm', ['id' => $id]); 
+    }
+
     
     public function render()
     {
         if ($this->storeUser == 1)
-            $productQuery = Product::has('gallery', '==', '0');
+            $productQuery = Product::with('galleries');
         else
-            $productQuery = Product2::has('gallery', '==', '0');
+            $productQuery = Product2::with('galleries');
         if ($this->searchName)
         {
             $name =$this->searchName;
-           $productQuery = $productQuery->where(function($q) use($name){
+          $productQuery->where(function($q) use($name){
             $q ->where('name', 'like', '%' . $name . '%')->orWhere('product_code', 'like', '%' . $name . '%')->orWhere('bar_code', 'like', '%' . $name . '%');
            });
           
+        }
+        else{
+            $productQuery->has('gallery', '==', '0');
         }
            
         return view('livewire.admin.product.upload-product-image', [
@@ -97,7 +144,8 @@ class UploadProductImage extends Component
             $product = Product2::with('gallery')->find($id);
         $this->state['product_id'] = $product->id;
         $this->state['image'] = null;
-        $this->state['gallery_image'] = isset($product->gallery)?$product->gallery->gallery_image:null;
+        $this->gallery_images = $product->gallery()->get();
+        //$this->state['gallery_image'] = isset($product->gallery)?$product->gallery->gallery_image:null;
         $this->dispatchBrowserEvent('show-product-image-form');
     }
 
@@ -115,23 +163,19 @@ class UploadProductImage extends Component
             $product_img = $this->state['image'];
             $filename = time() . '-' . rand(1000, 9999) . '.' . $product_img->getClientOriginalExtension();
             $product_img->storeAs("public/product_image", $filename);
-            if(isset($updateProduct->gallery))
+            /* if(isset($updateProduct->gallery))
             {
                 @unlink(storage_path('app/public/product_image/' . $updateProduct->gallery->gallery_image));
-            }
+            } */
             if ($this->storeUser == 1){
-                Gallery::updateOrCreate([
-                    'product_id' => $updateProduct->id
-                    ],
-                    [
+                Gallery::create([
+                    'product_id' => $updateProduct->id,
                     'gallery_image' => $filename,
                     'status' => 'Y',
                 ]);
             }else{
-                Gallery2::updateOrCreate([
-                    'product_id' => $updateProduct->id
-                    ],
-                    [
+                Gallery2::create([
+                    'product_id' => $updateProduct->id,
                     'gallery_image' => $filename,
                     'status' => 'Y',
                 ]);

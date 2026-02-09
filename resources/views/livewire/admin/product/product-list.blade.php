@@ -66,18 +66,20 @@
                                                 <td>{{ @$orderDetails->product_name }}</td>
                                                 <td>{{ @$orderDetails->product_code }}</td>
                                                 @if (Auth::user()->type == 'A')
-                                                    <td>{{ @$orderDetails->purchase_price }}</td>
+                                                    <td>{{ env('CURRENCY', '₹') }}{{ @$orderDetails->purchase_price }}
+                                                    </td>
                                                 @endif
-                                                <td>{{ @$orderDetails->selling_price }}</td>
-                                                <td>{{ @$orderDetails->discount }}</td>
-                                                <td>{{ number_format(@$orderDetails->selling_price - @$orderDetails->discount, 2) }}
+                                                <td>{{ env('CURRENCY', '₹') }}{{ @$orderDetails->selling_price }}</td>
+                                                <td>{{ env('CURRENCY', '₹') }}{{ @$orderDetails->discount }}</td>
+                                                <td>{{ env('CURRENCY', '₹') }}{{ number_format(@$orderDetails->selling_price - @$orderDetails->discount, 2) }}
                                                 </td>
                                                 @if (Auth::user()->type == 'A')
-                                                    <td>{{ number_format(@$orderDetails->profit, 2) }}</td>
+                                                    <td>{{ env('CURRENCY', '₹') }}{{ number_format(@$orderDetails->profit, 2) }}
+                                                    </td>
                                                     <td>{{ @$orderDetails->profit_percentage }}%</td>
                                                 @endif
                                                 <td>{{ @$orderDetails->qty }}</td>
-                                                <td>{{ number_format(@$orderDetails->subtotal - @$orderDetails->total_discount, 2) }}
+                                                <td>{{ env('CURRENCY', '₹') }}{{ number_format(@$orderDetails->subtotal - @$orderDetails->total_discount, 2) }}
                                                 </td>
                                                 <td><button type="button" class="btn btn-warning"
                                                         wire:click="returnOrder({{ $orderDetails->id }})">Return</button>
@@ -116,11 +118,12 @@
                                             <tr>
                                                 <td>{{ @$details->product_name }}</td>
                                                 <td>{{ @$details->product_code }}</td>
-                                                <td>{{ @$details->selling_price }}</td>
-                                                <td>{{ @$details->discount }}</td>
-                                                <td>{{ @$details->selling_price - @$details->discount }}</td>
+                                                <td>{{ env('CURRENCY', '₹') }}{{ @$details->selling_price }}</td>
+                                                <td>{{ env('CURRENCY', '₹') }}{{ @$details->discount }}</td>
+                                                <td>{{ env('CURRENCY', '₹') }}{{ @$details->selling_price - @$details->discount }}
+                                                </td>
                                                 <td>{{ @$details->qty }}</td>
-                                                <td>{{ number_format(@$details->selling_price * @$details->qty, 2) }}
+                                                <td>{{ env('CURRENCY', '₹') }}{{ number_format(@$details->selling_price * @$details->qty, 2) }}
                                                 </td>
                                             </tr>
                                         @endforeach
@@ -363,6 +366,33 @@
                                         @endif
                                     </td>
                                 </tr>
+                                @if (@$viewOrder->due_amount > 0)
+                                    <tr>
+                                        <td style="text-align: left; padding: 7px 0px; border-top: 1px dashed #ccc; border-bottom: 1px dashed #ccc;"
+                                            colspan="2"> <strong>Due Amount :</strong></td>
+                                        <td
+                                            style="text-align: right; padding: 7px 0px; border-top: 1px dashed #ccc; border-bottom: 1px dashed #ccc;"><!-- @if (isset($viewOrder))
+{{ @$viewOrder->due_amount }}
+@else
+0.00
+@endif -->
+                                            {{ number_format(@$viewOrder->due_amount, 2) }}
+                                        </td>
+                                    </tr>
+
+                                    <tr>
+                                        <td style="text-align: left; padding: 7px 0px; border-top: 1px dashed #ccc; border-bottom: 1px dashed #ccc;"
+                                            colspan="2"> <strong>Collected Amount :</strong></td>
+                                        <td
+                                            style="text-align: right; padding: 7px 0px; border-top: 1px dashed #ccc; border-bottom: 1px dashed #ccc;"><!-- @if (isset($viewOrder))
+{{ @$viewOrder->collected_amount }}
+@else
+0.00
+@endif -->
+                                            {{ number_format(@$viewOrder->collected_amount, 2) }}
+                                        </td>
+                                    </tr>
+                                @endif
                             </tbody>
                         </table>
                     </td>
@@ -408,6 +438,9 @@
                                 @error('name')
                                     <span class="text-danger error">{{ $message }}</span>
                                 @enderror
+                                @if ('error_name')
+                                    <span class="text-danger error">{{ $error_name }}</span>
+                                @endif
                             </div>
                             @if (isset($state['product_code']))
                                 <div class="mb-3 col-md-6">
@@ -458,8 +491,8 @@
                                     <label class="form-label">Item Code</label>
                                     <div class="input-group mb-3">
                                         <input type="text" class="form-control" placeholder="Item Code"
-                                            wire:model.defer="state.bar_code" onkeypress="return number_check(event);" maxlength="12"
-                                            style="background: #fff;">
+                                            wire:model.defer="state.bar_code" onkeypress="return number_check(event);"
+                                            maxlength="12" style="background: #fff;">
                                         <div class="input-group-append" style="cursor: pointer;">
                                             <span class="input-group-text" id="basic-addon2"
                                                 wire:click="generateEditBarCode('{{ json_encode($state) }}')">{{ $state['bar_code'] ? 'View' : 'Generate' }}
@@ -469,6 +502,9 @@
                                     @error('bar_code')
                                         <span class="text-danger error">{{ $message }}</span>
                                     @enderror
+                                    @if ('error_bar_code')
+                                        <span class="text-danger error">{{ $error_bar_code }}</span>
+                                    @endif
                                 </div>
                             @endif
                             <div class="mb-3 col-md-6">
@@ -557,31 +593,31 @@
                                     <td>{{ @$viewProduct->product_code }}</td>
                                     <th>Item Code :</th>
                                     <td>{{ @$viewProduct->bar_code }}</td>
-                                    
+
                                 </tr>
                                 <tr>
                                     <th>Product Name :</th>
                                     <td>{{ @$viewProduct->name }}</td>
                                     @if (Auth::user()->type == 'A')
                                         <th>Purchase Price :</th>
-                                        <td>{{ @$viewProduct->purchase_price }}</td>
+                                        <td>{{ env('CURRENCY', '₹') }}{{ @$viewProduct->purchase_price }}</td>
                                     @endif
-                                    
+
                                     {{-- <td>Available Quantity</td> --}}
                                 </tr>
                                 <tr>
                                     <th>Selling Price</th>
-                                    <td>{{ @$viewProduct->selling_price }}</td>
+                                    <td>{{ env('CURRENCY', '₹') }}{{ @$viewProduct->selling_price }}</td>
                                     <th>Inserted Stock :</th>
                                     <td>{{ @$viewProduct->product_quantities_sum_quantity ?? 0 }}</td>
-                                    
+
                                 </tr>
                                 <tr>
                                     <th>Product Reduce :</th>
                                     <td>{{ @$viewProduct->product_reductions_sum_qty ?? 0 }}</td>
                                     <th>Return Quantity :</th>
                                     <td>{{ @$viewProduct->return_products_quantity_sum_qty ?? 0 }}</td>
-                                    
+
                                 </tr>
                                 <tr>
                                     <th>Available Quantity</th>
@@ -784,7 +820,7 @@
                                                     wire:click.prevent="viewOrders({{ $order->order_id }},{{ $viewProduct->id }})">{{ @$order->order_id }}</a>
                                             </td>
                                             <td>{{ @$order->qty }}</td>
-                                            <td>{{ @$order->selling_price }}</td>
+                                            <td>{{ env('CURRENCY', '₹') }}{{ @$order->selling_price }}</td>
                                         </tr>
                                     @endforeach
                                     <tr>
@@ -886,7 +922,8 @@
             </div><!-- /.modal-content -->
         </div><!-- /.modal-dialog -->
     </div>
-    <div wire:ignore.self id="editBarcodeModal" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true">
+    <div wire:ignore.self id="editBarcodeModal" class="modal fade" tabindex="-1" role="dialog"
+        aria-hidden="true">
         <div class="modal-dialog"
             style="    border-radius: 10px;
     overflow: hidden;
@@ -1224,18 +1261,21 @@
                                                 <td>{{ @$orderDetails->product_name }}</td>
                                                 <td>{{ @$orderDetails->product_code }}</td>
                                                 @if (Auth::user()->type == 'A')
-                                                    <td>{{ @$orderDetails->purchase_price }}</td>
+                                                    <td>{{ env('CURRENCY', '₹') }}{{ @$orderDetails->purchase_price }}
+                                                    </td>
                                                 @endif
-                                                <td>{{ @$orderDetails->selling_price }}</td>
-                                                <td>{{ @$orderDetails->discount }}</td>
-                                                <td>{{ number_format(@$orderDetails->selling_price - @$orderDetails->discount, 2) }}
+                                                <td>{{ env('CURRENCY', '₹') }}{{ @$orderDetails->selling_price }}
+                                                </td>
+                                                <td>{{ env('CURRENCY', '₹') }}{{ @$orderDetails->discount }}</td>
+                                                <td>{{ env('CURRENCY', '₹') }}{{ number_format(@$orderDetails->selling_price - @$orderDetails->discount, 2) }}
                                                 </td>
                                                 @if (Auth::user()->type == 'A')
-                                                    <td>{{ number_format(@$orderDetails->profit, 2) }}</td>
+                                                    <td>{{ env('CURRENCY', '₹') }}{{ number_format(@$orderDetails->profit, 2) }}
+                                                    </td>
                                                     <td>{{ @$orderDetails->profit_percentage }}%</td>
                                                 @endif
                                                 <td>{{ @$orderDetails->qty }}</td>
-                                                <td>{{ number_format(@$orderDetails->subtotal - @$orderDetails->total_discount, 2) }}
+                                                <td>{{ env('CURRENCY', '₹') }}{{ number_format(@$orderDetails->subtotal - @$orderDetails->total_discount, 2) }}
                                                 </td>
                                                 <td><button type="button" class="btn btn-warning"
                                                         wire:click.prevent="returnOrder({{ $orderDetails->id }})">Return</button>
@@ -1277,11 +1317,12 @@
                                             <tr>
                                                 <td>{{ @$details->product_name }}</td>
                                                 <td>{{ @$details->product_code }}</td>
-                                                <td>{{ @$details->selling_price }}</td>
-                                                <td>{{ @$details->discount }}</td>
-                                                <td>{{ @$details->selling_price - @$details->discount }}</td>
+                                                <td>{{ env('CURRENCY', '₹') }}{{ @$details->selling_price }}</td>
+                                                <td>{{ env('CURRENCY', '₹') }}{{ @$details->discount }}</td>
+                                                <td>{{ env('CURRENCY', '₹') }}{{ @$details->selling_price - @$details->discount }}
+                                                </td>
                                                 <td>{{ @$details->qty }}</td>
-                                                <td>{{ number_format(@$details->selling_price * @$details->qty, 2) }}
+                                                <td>{{ env('CURRENCY', '₹') }}{{ number_format(@$details->selling_price * @$details->qty, 2) }}
                                                 </td>
                                             </tr>
                                         @endforeach
@@ -1320,6 +1361,9 @@
                                 @error('name')
                                     <span class="text-danger error">{{ $message }}</span>
                                 @enderror
+                                @if ('error_name')
+                                    <span class="text-danger error">{{ $error_name }}</span>
+                                @endif
                             </div>
 
                             <input type="hidden" wire:model.defer="product_id">
@@ -1338,7 +1382,8 @@
                             <div class="mb-3 col-md-6">
                                 <label class="form-label">Quantity</label>
                                 <input type="text" class="form-control" placeholder="Quantity"
-                                    onkeypress="return number_check(event);" wire:model.defer="quantity"  wire:focus="inputFocused">
+                                    onkeypress="return number_check(event);" wire:model.defer="quantity"
+                                    wire:focus="inputFocused">
                                 @error('quantity')
                                     <span class="text-danger error">{{ $message }}</span>
                                 @enderror
@@ -1346,7 +1391,8 @@
                             <div class="mb-3 col-md-6">
                                 <label class="form-label">Quantity Alert</label>
                                 <input type="text" onkeypress="return number_check(event);" class="form-control"
-                                    placeholder="Quantity Alert" wire:model.defer="default_quantity" wire:focus="inputFocused">
+                                    placeholder="Quantity Alert" wire:model.defer="default_quantity"
+                                    wire:focus="inputFocused">
                                 @error('default_quantity')
                                     <span class="text-danger error">{{ $message }}</span>
                                 @enderror
@@ -1370,23 +1416,26 @@
                                 @enderror
                             </div>
 
-                                <div class="mb-3 col-md-6">
-                                    <label class="form-label">Item Code</label>
-                                    <div class="input-group mb-3">
-                                        <input type="text" class="form-control" placeholder="Item Code"
-                                            wire:model.defer="bar_code" maxlength="12"
-                                            style="background: #fff;" wire:focus="inputFocused"  onkeypress="return number_check(event);">
-                                        <div class="input-group-append" style="cursor: pointer;">
-                                            <span class="input-group-text" id="basic-addon2"
-                                                wire:click="generateBarCode('{{ $product_id }}')">{{ $bar_code ? 'View' : 'Generate' }}
-                                                Barcode</span>
-                                        </div>
+                            <div class="mb-3 col-md-6">
+                                <label class="form-label">Item Code</label>
+                                <div class="input-group mb-3">
+                                    <input type="text" class="form-control" placeholder="Item Code"
+                                        wire:model.defer="bar_code" maxlength="12" style="background: #fff;"
+                                        wire:focus="inputFocused" onkeypress="return number_check(event);">
+                                    <div class="input-group-append" style="cursor: pointer;">
+                                        <span class="input-group-text" id="basic-addon2"
+                                            wire:click="generateBarCode('{{ $product_id }}')">{{ $bar_code ? 'View' : 'Generate' }}
+                                            Barcode</span>
                                     </div>
-
-                                    @error('bar_code')
-                                        <span class="text-danger error">{{ $message }}</span>
-                                    @enderror
                                 </div>
+
+                                @error('bar_code')
+                                    <span class="text-danger error">{{ $message }}</span>
+                                @enderror
+                                @if ('error_bar_code')
+                                    <span class="text-danger error">{{ $error_bar_code }}</span>
+                                @endif
+                            </div>
                             {{-- @if (isset($bar_code))
                     <div class="mb-3 col-md-6">
                         <img src="data:image/png;base64,{{DNS1D::getBarcodePNG($bar_code, 'C39')}}" alt="barcode" />
@@ -1545,12 +1594,24 @@
                                     <tr>
                                         <td>{{ $item }}</td>
                                         <td>
-                                            @if (isset($row->gallery))
-                                                <a data-fancybox="gallery"
-                                                    href="{{ asset('storage/app/public/product_image/' . $row->gallery->gallery_image) }}">
-                                                    <img src="{{ asset('storage/app/public/product_image/' . $row->gallery->gallery_image) }}"
-                                                        alt="contact-img" title="contact-img" class="rounded" />
-                                                </a>
+                                            @if (count($row->galleries))
+                                                @foreach ($row->galleries as $imgKey => $gallery)
+                                                    @if ($imgKey == 0)
+                                                        <a class="example-image-link"
+                                                            href="{{ asset('storage/app/public/product_image/' . $row->gallery->gallery_image) }}"
+                                                            data-lightbox="example-set{{ $row->id }}"><img
+                                                                class="example-image rounded me-3"
+                                                                src="{{ asset('storage/app/public/product_image/' . $row->gallery->gallery_image) }}"
+                                                                alt="" height="48" width="48" /></a>
+                                                    @else
+                                                        <a class="example-image-link"
+                                                            href="{{ asset('storage/app/public/product_image/' . $gallery->gallery_image) }}"
+                                                            data-lightbox="example-set{{ $row->id }}"><img
+                                                                class="example-image rounded me-3 d-none"
+                                                                src="{{ asset('storage/app/public/product_image/' . $gallery->gallery_image) }}"
+                                                                alt="" height="48" width="48" /></a>
+                                                    @endif
+                                                @endforeach
                                             @else
                                                 <img src="{{ asset('public/assets/images/no_image.png') }}"
                                                     alt="contact-img" title="contact-img" class="rounded" />
@@ -1583,7 +1644,7 @@
                                                     style="margin: 0;">+</button>
                                             </div>
                                         </td>
-                                        <td>{{ $row->selling_price }}</td>
+                                        <td>{{ env('CURRENCY', '₹') }}{{ $row->selling_price }}</td>
                                         <td style="display: flex;">
                                             @if ($row->is_discount)
                                                 @if ($row->discount_type == 'Flat')

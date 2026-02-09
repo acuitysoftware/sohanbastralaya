@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Livewire\Admin\Order;
+namespace App\Http\Livewire\Admin\ProductReport;
 
 use DB;
 use Hash;
@@ -23,13 +23,11 @@ use App\Models\ReturnProduct2;
 use App\Models\ProductOrderDetails;
 use App\Models\ProductOrderDetails2;
 use App\Http\Livewire\Traits\AlertMessage;
-
-class OrderList extends Component
+class DueOrderReport extends Component
 {
-
     use WithPagination;
     use AlertMessage;
-    public $searchName, $dateForm, $dateTo, $viewOrder, $product_name, $total_profit, $product_code, $product_qty, $product_selling_price, $return_order_id, $perPage, $total_purchase, $returnOrder, $setting, $storeUser, $user, $viewDueOrderDetails, $state = [];
+    public $searchName, $dateForm, $dateTo, $viewOrder, $product_name, $total_profit, $product_code, $product_qty, $product_selling_price, $return_order_id, $perPage, $total_purchase, $returnOrder, $setting, $storeUser, $user,$viewDueOrderDetails, $state=[];
     protected $listeners = ['deleteConfirm', 'loadMore'];
     protected $paginationTheme = 'bootstrap';
     public function mount()
@@ -70,9 +68,9 @@ class OrderList extends Component
     public function viewOrders($id)
     {
         if ($this->storeUser == 1)
-            $this->viewOrder = ProductOrderDetails::with('productDetails.product', 'returnProducts.product')->withCount('due_payments')->find($id);
+            $this->viewOrder = ProductOrderDetails::with('productDetails', 'returnProducts')->withCount('due_payments')->find($id);
         else
-            $this->viewOrder = ProductOrderDetails2::with('productDetails.product', 'returnProducts.product')->withCount('due_payments')->find($id);
+            $this->viewOrder = ProductOrderDetails2::with('productDetails', 'returnProducts')->withCount('due_payments')->find($id);
 
         //dd($this->viewOrder);
         $this->dispatchBrowserEvent('show-order-view-form');
@@ -204,6 +202,7 @@ class OrderList extends Component
     {
         if ($this->storeUser == '1') {
             $this->viewDueOrderDetails = ProductOrderDetails::with('due_payments')->find($id);
+            
         } else {
             $this->viewDueOrderDetails = ProductOrderDetails2::with('due_payments')->find($id);
         }
@@ -223,43 +222,45 @@ class OrderList extends Component
             $orderData = ProductOrderDetails2::find($this->state['id']);
         }
 
-
+    
         Validator::make($this->state, [
-            'pay_amount' => 'required|numeric|max:' . $orderData->due_amount,
+            'pay_amount' => 'required|numeric|max:'.$orderData->due_amount,
         ])->validate();
+        
+            $current_due =0;
+            if($orderData->due_amount != (float)$this->state['pay_amount']){
+                $current_due =$orderData->due_amount - (float)$this->state['pay_amount'];
 
-        $current_due = 0;
-        if ($orderData->due_amount != (float)$this->state['pay_amount']) {
-            $current_due = $orderData->due_amount - (float)$this->state['pay_amount'];
-        }
+            }
 
-        if ($this->storeUser == 1) {
-            $data = OrderDueAmount::create([
-                'order_id' => $orderData->id,
-                'total_amount'  => $orderData->total_amount,
+            if ($this->storeUser == 1) {
+                $data = OrderDueAmount::create([
+                    'order_id' => $orderData->id,
+                    'total_amount'  => $orderData->total_amount,
+                    'due_amount'  => $current_due,
+                    'collected_amount'  => $this->state['pay_amount'],
+                    'order_date'  => date('Y-m-d'),
+                    'date'  => date('Y-m-d'),
+                ]);
+            } else {
+                $data = OrderDueAmount2::create([
+                     'order_id' => $orderData->id,
+                    'total_amount'  => $orderData->total_amount,
+                    'due_amount'  => $current_due,
+                    'collected_amount'  => $this->state['pay_amount'],
+                    'order_date'  => date('Y-m-d'),
+                    'date'  => date('Y-m-d'),
+                ]);
+            }
+
+            $orderData->update([
                 'due_amount'  => $current_due,
-                'collected_amount'  => $this->state['pay_amount'],
-                'order_date'  => date('Y-m-d'),
-                'date'  => date('Y-m-d'),
+                'collected_amount'  => ($orderData->collected_amount+(float)$this->state['pay_amount']),
             ]);
-        } else {
-            $data = OrderDueAmount2::create([
-                'order_id' => $orderData->id,
-                'total_amount'  => $orderData->total_amount,
-                'due_amount'  => $current_due,
-                'collected_amount'  => $this->state['pay_amount'],
-                'order_date'  => date('Y-m-d'),
-                'date'  => date('Y-m-d'),
-            ]);
-        }
-
-        $orderData->update([
-            'due_amount'  => $current_due,
-            'collected_amount'  => ($orderData->collected_amount + (float)$this->state['pay_amount']),
-        ]);
-
-        $this->showToastr("success", 'Payment updated successfully');
-        return redirect()->route('order_list');
+           
+            $this->showToastr("success", 'Payment updated successfully');
+            return redirect()->route('due_order_report');
+        
     }
 
     public function returnOrder($id)
@@ -283,86 +284,44 @@ class OrderList extends Component
     {
 
         if ($this->storeUser == '1') {
-            $orderQuery = ProductOrderDetails::with('productDetails', 'user')->withCount('due_payments');
-             $totalOrderQuery = ProductOrderDetails::select(DB::raw("sum(st_product_order_details.total_amount) as total_sales"),  DB::raw("sum(st_product_order_details.subtotal) as total_product_selling_price"), DB::raw("sum(cast(st_product_order_details.due_amount as decimal(10,2))) as 'total_due_amount'"), DB::raw("sum(st_product_order_details.collected_amount) as 'total_collected_amount'"));
-            $totalOrderQuery2 = ProductOrder::join('st_product_order_details', 'st_product_order.order_id', '=', 'st_product_order_details.order_id')
-                ->select(DB::raw('CAST(sum(st_product_order.qty*st_product_order.selling_price)-sum(st_product_order.qty*st_product_order.purchase_price)  AS FLOAT) as total_profit'), 'st_product_order_details.order_date as order_date', DB::raw("sum(st_product_order.qty*st_product_order.discount) as 'total_discount_amount'"));
+            $orderQuery = ProductOrderDetails::with('productDetails', 'user')->withCount('due_payments')->where('due_amount' , '>', 0);
+            $totalOrderQuery = ProductOrderDetails::join('st_product_order', 'st_product_order.order_id', '=', 'st_product_order_details.order_id')
+                ->select('order_date', DB::raw("SUM(st_product_order_details.subtotal) as 'total_selling_price'"), DB::raw("SUM(cast(st_product_order_details.wallet_discount as decimal(10,2))) as 'wallet_blance'"), DB::raw("sum(st_product_order_details.discount_amt) as 'total_discount_amt'"), DB::raw("sum(st_product_order_details.perctge_amt) as 'total_discount_percnt'"), DB::raw("SUM(st_product_order_details.return_amt) as 'total_return_price'"), DB::raw('sum(st_product_order.qty*st_product_order.purchase_price) AS total_purchase_price'), DB::raw('count(st_product_order_details.order_id) AS count'));
         } else {
-            $orderQuery = ProductOrderDetails2::with('productDetails', 'user')->withCount('due_payments');
-            $totalOrderQuery = ProductOrderDetails2::select(DB::raw("sum(st_product_order_details.total_amount) as total_sales"),  DB::raw("sum(st_product_order_details.subtotal) as total_product_selling_price"), DB::raw("sum(cast(st_product_order_details.due_amount as decimal(10,2))) as 'total_due_amount'"), DB::raw("sum(st_product_order_details.collected_amount) as 'total_collected_amount'"));
-            $totalOrderQuery2 = ProductOrder2::join('st_product_order_details', 'st_product_order.order_id', '=', 'st_product_order_details.order_id')
-                ->select(DB::raw('CAST(sum(st_product_order.qty*st_product_order.selling_price)-sum(st_product_order.qty*st_product_order.purchase_price)  AS FLOAT) as total_profit'), 'st_product_order_details.order_date as order_date', DB::raw("sum(st_product_order.qty*st_product_order.discount) as 'total_discount_amount'"));
+            $orderQuery = ProductOrderDetails2::with('productDetails', 'user')->withCount('due_payments')->where('due_amount' , '>', 0);
+            $totalOrderQuery = ProductOrderDetails2::join('st_product_order', 'st_product_order.order_id', '=', 'st_product_order_details.order_id')
+                ->select('order_date', DB::raw("SUM(st_product_order_details.subtotal) as 'total_selling_price'"), DB::raw("SUM(cast(st_product_order_details.wallet_discount as decimal(10,2))) as 'wallet_blance'"), DB::raw("sum(st_product_order.qty*st_product_order.discount) as 'total_discount'"), DB::raw("SUM(st_product_order_details.return_amt) as 'total_return_price'"), DB::raw('sum(st_product_order.qty*st_product_order.purchase_price) AS total_purchase_price'), DB::raw('count(st_product_order.order_id) AS count'));
         }
         if ($this->searchName) {
             $name = $this->searchName;
             $orderQuery->where(function ($q) use ($name) {
-                $q->where('customer_name', 'like', '%' . $name . '%')->orWhere('customer_phone', 'like', '%' . $name . '%')->orWhere('st_product_order_details.order_id', 'like', '%' . $name . '%');
+                $q->where('customer_name', 'like', '%' . $name . '%')->orWhere('customer_phone', 'like', '%' . $name . '%')->orWhere('order_id', 'like', '%' . $name . '%');
             });
-            $totalOrderQuery->where(function ($q) use ($name) {
-                $q->where('customer_name', 'like', '%' . $name . '%')->orWhere('customer_phone', 'like', '%' . $name . '%')->orWhere('st_product_order_details.order_id', 'like', '%' . $name . '%');
-            });
-            $totalOrderQuery2->where(function ($q) use ($name) {
-                $q->where('customer_name', 'like', '%' . $name . '%')->orWhere('customer_phone', 'like', '%' . $name . '%')->orWhere('st_product_order_details.order_id', 'like', '%' . $name . '%');
-            });
-        } else {
-            // dd('ok');
-            if ($this->dateForm) {
-                $date['form_date'] = $this->dateForm;
-                $orderQuery = $orderQuery->where(DB::raw("DATE(order_date)"), '>=', date('Y-m-d', strtotime($date['form_date'])));
-                $totalOrderQuery = $totalOrderQuery->where(DB::raw("DATE(order_date)"), '>=', date('Y-m-d', strtotime($date['form_date'])));
-                $totalOrderQuery2 = $totalOrderQuery2->where(DB::raw("DATE(order_date)"), '>=', date('Y-m-d', strtotime($date['form_date'])));
-            }
-            if ($this->dateTo) {
-                $date['to_date'] = $this->dateTo;
-                $orderQuery = $orderQuery->where(DB::raw("DATE(order_date)"), '<=', date('Y-m-d', strtotime($date['to_date'])));
-                $totalOrderQuery = $totalOrderQuery->where(DB::raw("DATE(order_date)"), '<=', date('Y-m-d', strtotime($date['to_date'])));
-                $totalOrderQuery2 = $totalOrderQuery2->where(DB::raw("DATE(order_date)"), '<=', date('Y-m-d', strtotime($date['to_date'])));
-            }
         }
-
-        $sales = $totalOrderQuery->first();
-        $sales2 = $totalOrderQuery2->first();
-        /*    dump($sales2);
-    dd($sales); */
+        if ($this->dateForm && $this->dateTo) {
+            $date['form_date'] = $this->dateForm;
+            $date['to_date'] = $this->dateTo;
+            $orderQuery = $orderQuery->whereBetween('order_date', [$date['form_date'], $date['to_date']]);
+            $totalOrderQuery = $totalOrderQuery->whereBetween('order_date', [$date['form_date'], $date['to_date']]);
+        }
+        if ($this->dateForm) {
+            $date['form_date'] = $this->dateForm;
+            $orderQuery = $orderQuery->where(DB::raw("DATE(order_date)"), '>=', date('Y-m-d', strtotime($date['form_date'])));
+            $totalOrderQuery = $totalOrderQuery->where(DB::raw("DATE(order_date)"), '>=', date('Y-m-d', strtotime($date['form_date'])));
+        }
+        if ($this->dateTo) {
+            $date['to_date'] = $this->dateTo;
+            $orderQuery = $orderQuery->where(DB::raw("DATE(order_date)"), '<=', date('Y-m-d', strtotime($date['to_date'])));
+            $totalOrderQuery = $totalOrderQuery->where(DB::raw("DATE(order_date)"), '<=', date('Y-m-d', strtotime($date['to_date'])));
+        }
+        $this->total_purchase = $totalOrderQuery->first();
         $orders = $orderQuery
             ->orderBy('id', 'desc')
             ->paginate($this->perPage);
-        return view('livewire.admin.order.order-list', [
-            'orders' => $orders,
-            'sales' => $sales,
-            'sales2' => $sales2,
+        //dd($orders->getCollection()->sum('total_amount') );
+        return view('livewire.admin.product-report.due-order-report', [
+            'orders' => $orders
         ]);
     }
-    public function deleteAttempt($id)
-    {
-        $this->showConfirmation("warning", 'Are you sure?', "You won't be able to recover this Order!", 'Yes, delete!', 'deleteConfirm', ['id' => $id]);
-    }
-
-
-    public function deleteConfirm($id)
-    {
-        if ($this->storeUser == 1)
-            $deleteOrder = ProductOrderDetails::with('productDetails')->find($id['id']);
-        else
-            $deleteOrder = ProductOrderDetails2::with('productDetails')->find($id['id']);
-
-        if (count($deleteOrder->productDetails)) {
-            foreach ($deleteOrder->productDetails as $key => $value) {
-                $product = Product::find($value->product_id);
-                if ($product) {
-                    $product->update([
-                        'quantity' => ($product->quantity + $value->qty),
-                    ]);
-                }
-                $value->delete();
-            }
-        }
-        if (count($deleteOrder->cards)) {
-            foreach ($deleteOrder->cards as $key => $value) {
-                $value->delete();
-            }
-        }
-        $deleteOrder->delete();
-        $this->showModal('success', 'Success', 'Order has been deleted successfully');
-    }
+   
 }

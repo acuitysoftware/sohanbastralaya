@@ -159,7 +159,7 @@
                             <tr>
                                 <td>{{$membership->order_id}}</td>
                                 <td>{{$membership->order->order_date}}</td>
-                                <td>{{$membership->grand_amt}}</td>
+                                <td>{{env('CURRENCY','₹')}}{{$membership->grand_amt}}</td>
                                 <td>{{$membership->credit_points}}</td>
                                 <td>{{$membership->debit_point}}</td>
                             </tr>

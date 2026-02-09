@@ -86,20 +86,20 @@
                                 @endphp
                                 <tr>
                                     <td>{{date('d/m/Y',strtotime($row->order_date)) }}</td>
-                                    <td>{{number_format($total_selling_data[$key]->total_price,2)}}</td>
+                                    <td>{{env('CURRENCY','₹')}}{{number_format($total_selling_data[$key]->total_price,2)}}</td>
                                     <!-- <td>{{number_format($row->total_selling_price-$row->total_discount,2)}}</td> -->
                                     @if(Auth::user()->type=='A')
-                                    <td>{{number_format($row->total_purchase_price,2)}}</td>
-                                    <td>{{number_format(($row->sub_total-($row->total_purchase_price+$row->total_discount)),2)}}</td>
+                                    <td>{{env('CURRENCY','₹')}}{{number_format($row->total_purchase_price,2)}}</td>
+                                    <td>{{env('CURRENCY','₹')}}{{number_format(($row->sub_total-($row->total_purchase_price+$row->total_discount)),2)}}</td>
                                     @endif
                                 </tr>
                             @endforeach
                             <tr>
                                 <td></td>
-                                <td>{{number_format(ceil($total_selling_price),2)}}</td>
+                                <td>{{env('CURRENCY','₹')}}{{number_format(ceil($total_selling_price),2)}}</td>
                                 @if(Auth::user()->type=='A')
-                                <td>{{number_format(ceil($total_purchase_price),2)}}</td>
-                                <td>{{number_format(ceil($total_profit),2)}}</td>
+                                <td>{{env('CURRENCY','₹')}}{{number_format(ceil($total_purchase_price),2)}}</td>
+                                <td>{{env('CURRENCY','₹')}}{{number_format(ceil($total_profit),2)}}</td>
                                 @endif
                             </tr>
                             @else

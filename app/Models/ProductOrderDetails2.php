@@ -26,6 +26,10 @@ class ProductOrderDetails2 extends Model
 	{
 		return $this->hasMany(ReturnProduct2::class, 'order_id', 'order_id');
 	}
+	public function due_payments()
+	{
+		return $this->hasMany(OrderDueAmount2::class, 'order_id', 'id');
+	}
 
 	public function returnProduct()
 	{

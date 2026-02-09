@@ -47,4 +47,9 @@ class ProductReportController extends Controller
         $data['title'] = 'User Purchase Report';
         return view('pages.product_report.user_purchase_report', $data);
     }
+    public function dueOrderReport()
+    {
+        $data['title'] = 'Due Amount Report';
+        return view('pages.product_report.due_order_report', $data);
+    }
 }

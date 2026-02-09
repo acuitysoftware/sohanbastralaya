@@ -88,7 +88,7 @@
 								<td>{{$row->name}}</td>
 								<td>{{$row->product_code}}</td>
 								<td>{{$row->product_orders_sum_qty}}</td>
-								<td>{{$row->selling_price}}</td>
+								<td>{{env('CURRENCY','₹')}}{{$row->selling_price}}</td>
 							</tr>
 							@endforeach
                             @else

@@ -37,14 +37,14 @@
                                 </td>
                                 <td>{{$row->product->name}}</td>
                                 <td>{{$row->product->product_code}}</td>
-                                <td>{{$row->selling_price}}</td>
+                                <td>{{env('CURRENCY','₹')}}{{$row->selling_price}}</td>
                                 <td>
                                 	<div class="plusminus">
                                         <button class="btn btn-primary" type="button" wire:click="decrementQuantity({{$row->id}},{{$key}})" style="margin: 0;">-</button>
                                         <input  type="text" wire:model="cart_quantity.{{$key}}" >                <button class="btn btn-primary" type="button" wire:click="incrementQuantity({{$row->id}},{{$key}})" style="margin: 0;">+</button>
                                     </div>
                                 </td>
-                                <td>{{$row->selling_price*$row->quantity}}</td>
+                                <td>{{env('CURRENCY','₹')}}{{$row->selling_price*$row->quantity}}</td>
                                 <td style="display: flex;">
                                     @if($row->product->is_discount)
                                         @if($row->product->discount_type == 'Flat')
@@ -53,7 +53,7 @@
                                         $max_discount+=($row->product->discount_amt*$row->quantity);
                                         @endphp
 
-                                        <p>{{number_format($row->product->discount_amt*$row->quantity)}}</p>
+                                        <p>{{env('CURRENCY','₹')}}{{number_format($row->product->discount_amt*$row->quantity)}}</p>
                                         @else
                                         <p>{{number_format($row->product->discount_amt)}}%={{((($row->selling_price*$row->product->discount_amt)/100)*$row->quantity)}}
                                         </p>
@@ -67,7 +67,7 @@
                                         $max_discount+=((($row->selling_price*$setting->discount_percentage)/100)*$row->quantity);
                                     @endphp
                                     @endif
-                                    <input  type="text" wire:model="discount.{{$key}}" style="height: 35px; margin-left: 10px;"> 
+                                    <input  type="text" wire:model.debounce.500m="discount.{{$key}}" style="height: 35px; margin-left: 10px;" {{--  class="from-amount" --}} > 
                                 </td>
                                 <td>{{$cartItems[$key]->total_discount}}</td>
                                 <td style="white-space: nowrap;">
@@ -107,7 +107,7 @@
                     <div style="display: flex;align-items: center;">
                     <label class="tl-dv" style="margin: 0;">Sub Total:</label>
                         <span id="subtotal_span">
-                            {{number_format($sub_total,2)}}                       
+                            {{env('CURRENCY','₹')}}{{number_format($sub_total,2)}}                       
                         </span>
                         <input type="hidden" id="subtotal" name="subtotal" value="400">
 
@@ -119,7 +119,7 @@
                         @php
                         $current_discount = (((float)$sub_total*$setting->discount_percentage)/100);
                         @endphp
-                        <p><strong>Max Discount upto : {{number_format($max_discount,2)}} </strong></p>
+                        <p><strong>Max Discount upto : {{env('CURRENCY','₹')}}{{number_format($max_discount,2)}} </strong></p>
                         @endif
                 	</div>
 
@@ -155,7 +155,7 @@
     	                        <div id="allow_points" ><label>Use Wallet <span id="allwed_pt">({{$available_points}} points)</span>: <span id="remain_allow_points">{{$available_points}}</span></label></div>
     	                           
     	                       <div style="margin: 15px 0;" id="points_discnt"> <label>Wallet Discount</label>
-    	                       <input type="text" id="wallet_discount" wire:model="debit_points" value="" style="width:50px;text-align:center;"></div>
+    	                       <input type="text" id="wallet_discount" wire:model="debit_points" value="" style="width:50px;text-align:center;"  onkeypress="return number_check(event);" ></div>
                                @endif
     	            
 	                    </div>
@@ -163,7 +163,7 @@
 
 	                    <div style="display: flex;align-items: center;justify-content: space-between;font-size: 30px;background: #009CEC; color: #fff ;padding: 5px 15px;margin: 15px 0;">
 	                                <label style="margin: 0;">Total:</label>
-	                            <div id="total_span">{{number_format($total_amount,2)}}</div>
+	                            <div id="">{{env('CURRENCY','₹')}}{{number_format($total_amount,2)}}</div>
 	                            <input type="hidden" id="order_total_amt" name="order_total_amt" value="392">
 	                            <input type="hidden" id="grand_total" value="392">
 
@@ -172,6 +172,24 @@
 
 
 	                    </div>  
+
+                         <div id="discount_amt" style="margin: 15px 0px;">
+                            <label>Due Amount <span id="return_id"></span>:</label>
+                            <input type="text"  wire:model.debounce.500ms="due_amount" style="width:50px;text-align:center;margin-left: 10px;" class="from-amount" >   
+                            @if('error_due_amount')
+                                    <div class="text-danger error">{{ $error_due_amount }}</div>
+                                @endif     
+                        </div>
+                        @if($due_amount)
+                         <div style="display: flex;align-items: center;justify-content: space-between;font-size: 16px;background: #009CEC; color: #fff ;padding: 5px 15px;margin: 15px 0;">
+	                                <label style="margin: 0;">Collected Amount:</label>
+	                            <div id="">{{env('CURRENCY','₹')}}{{number_format($collected_amount,2)}}</div>
+	                           
+
+
+	                    </div> 
+                        @endif
+
                     </div>
                 </div>
                 <div>
@@ -219,7 +237,9 @@
                     </div>
 
                     <div class="mb-3 text-center">
-                        <button type="submit" class="btn btn-primary">Submit</button>
+                        <button type="submit" class="btn btn-primary" @if ($error_due_amount)
+                            disabled
+                        @endif>Submit</button>
                     </div> 
                     </form>
                 </div>                                       
@@ -432,10 +452,36 @@
                                                     {{number_format(($sub_total-($discount+(float)@$viewOrder->wallet_discount+@$viewOrder->return_amt)),2)}}
                                                 </td>
                                             </tr>
+                                            @if (@$viewOrder->due_amount > 0)
+                                            <tr>
+                                                <td style="text-align: left; padding: 7px 0px; border-top: 1px dashed #ccc; border-bottom: 1px dashed #ccc;" colspan="2"> <strong>Due Amount :</strong></td>
+                                                <td style="text-align: right; padding: 7px 0px; border-top: 1px dashed #ccc; border-bottom: 1px dashed #ccc;"><!-- @if(isset($viewOrder)){{@$viewOrder->due_amount}}
+                                                    @else
+                                                    0.00
+                                                    @endif -->
+                                                    {{number_format(@$viewOrder->due_amount,2)}}
+                                                </td>
+                                            </tr>
+
+                                            <tr>
+                                                <td style="text-align: left; padding: 7px 0px; border-top: 1px dashed #ccc; border-bottom: 1px dashed #ccc;" colspan="2"> <strong>Collected Amount :</strong></td>
+                                                <td style="text-align: right; padding: 7px 0px; border-top: 1px dashed #ccc; border-bottom: 1px dashed #ccc;"><!-- @if(isset($viewOrder)){{@$viewOrder->collected_amount}}
+                                                    @else
+                                                    0.00
+                                                    @endif -->
+                                                    {{number_format(@$viewOrder->collected_amount,2)}}
+                                                </td>
+                                            </tr>
+
+
+                                            @endif
                                         </tbody>
                                     </table>
                                 </td>
                             </tr>
+
+                        
+                            
                             <tr>
                                 <td style="font-size: 12px; color: #000; padding: 7px 0px;">
                                     <strong>Note</strong> : We exchange products within 7 days between 10: 30am to 12:30pm from the date of purchase.

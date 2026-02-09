@@ -108,9 +108,9 @@
                                 <td>{{$row->product_code}}</td>
                                 <td>{{$row->product_quantities_sum_quantity}}</td>
                                 <td>{{$avl_qty?$avl_qty:'Out of Stock'}}</td> 
-                                <td>{{$row->selling_price}}</td> 
+                                <td>{{env('CURRENCY','₹')}}{{$row->selling_price}}</td> 
                                 @if(Auth::user()->type=='A')
-                                <td>{{$row->purchase_price}}</td> 
+                                <td>{{env('CURRENCY','₹')}}{{$row->purchase_price}}</td> 
                                 @endif
                             </tr>
                             @endforeach

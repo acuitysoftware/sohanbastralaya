@@ -188,8 +188,7 @@ class SubAdminOrder extends Component
                     $ids[] = $id->billing_user;
                 }
             }
-        	$items = User::whereIn('id', $ids)->where('store', 1)->where(['type'=> 'S', 'status' =>1])->get();
-            
+        	$items = User::whereIn('id', $ids)->where('store', 2)->where(['type'=> 'S', 'status' =>1])->get();
             if(count($items)){
                 foreach($items as $key=>$item){
                    $da = new \stdClass();

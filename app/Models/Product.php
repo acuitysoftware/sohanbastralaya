@@ -8,17 +8,22 @@ use Illuminate\Database\Eloquent\Model;
 
 class Product extends Model
 {
-    use HasFactory;
+	use HasFactory;
 	public $timestamps = false;
-    protected $table = 'st_product';
+	protected $table = 'st_product';
 	protected $guarded = [];
 
-	
+
 	public function setNameAttribute($name)
-    {
-        $this->attributes['name'] = Str::ucfirst($name);
-    }
-    /*protected $appends = [
+	{
+		$this->attributes['name'] = Str::ucfirst($name);
+	}
+
+	/* public function scopeSearchQuery($query, $search_keyword)
+	{
+		return $query->whereAny(['name', 'product_code', 'bar_code'], 'like',"%{$search_keyword}%");
+	} */
+	/*protected $appends = [
         'total_purchase_price', 'total_selling_price',
     ];
 
@@ -34,6 +39,10 @@ class Product extends Model
 	public function gallery()
 	{
 		return $this->hasOne(Gallery::class);
+	}
+	public function galleries()
+	{
+		return $this->hasMany(Gallery::class);
 	}
 
 	public function productQuantities()
@@ -68,10 +77,6 @@ class Product extends Model
 
 	public function productReductions()
 	{
-		return $this->hasMany(EditProductStock::class)->where('qty','>', 0);
+		return $this->hasMany(EditProductStock::class)->where('qty', '>', 0);
 	}
-
-	
-
-	
 }

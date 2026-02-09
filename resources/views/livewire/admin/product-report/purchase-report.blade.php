@@ -3,7 +3,34 @@
 		<div class="card">
 			<div class="card-body">
 
+				@php
+                    function convert_numbers_to_indian_format($number)
+                    {
+                        $formattedAmount = number_format($number);
+                        $decimal = (string) ($number - floor($number));
+                        $money = floor($number);
+                        $length = strlen($money);
+                        $delimiter = '';
+                        $money = strrev($money);
+                        for ($i = 0; $i < $length; $i++) {
+                            if (($i == 3 || ($i > 3 && ($i - 1) % 2 == 0)) && $i != $length) {
+                                $delimiter .= ',';
+                            }
+                            $delimiter .= $money[$i];
+                        }
 
+                        $formattedAmount = strrev($delimiter);
+                        $decimal = preg_replace('/0\./i', '.', $decimal);
+                        $decimal = substr($decimal, 0, 3);
+
+                        if ($decimal != '0') {
+                            $formattedAmount = $formattedAmount . $decimal;
+                        } else {
+                            $formattedAmount = $formattedAmount . '.00';
+                        }
+                        return $formattedAmount;
+                    }
+                @endphp
 
 				<form wire:submit.prevent="save">
 				<div class="row mb-3">
@@ -105,7 +132,7 @@
                                         <td>{{ $item }}</td>
 								<td>{{$row->note}}</td>
 								<td>{{date('d/m/Y',strtotime($row->date)) }}</td>
-								<td>{{$row->purchase_price}}</td>
+								<td>{{env('CURRENCY','₹')}}{{convert_numbers_to_indian_format($row->purchase_price)}}</td>
 								<td style="white-space: nowrap;">
 									<a href="javascript:void(0);" class="action-icon" wire:click="edit({{$row->id}})"><i class="mdi mdi-square-edit-outline"></i></a>
 									<a href="javascript:void(0);" class="action-icon" id="warning" wire:click="deleteAttempt({{ $row->id }})"><i class="mdi mdi-delete"></i></a>
@@ -133,7 +160,7 @@
 
 								<tr>
 									<th>Total Purchase Amount :	</th>
-									<td>Rs {{number_format($reports->sum('purchase_price'),2)}}</td>
+									<th>{{env('CURRENCY','₹')}}{{convert_numbers_to_indian_format($reports->sum('purchase_price'))}}</th>
 								</tr>                                                
 							</tbody>
 						</table>

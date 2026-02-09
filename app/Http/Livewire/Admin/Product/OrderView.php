@@ -107,7 +107,7 @@ class OrderView extends Component
             if($data)
             {
                 $product->update([
-                    'quantity' => ($product->quantity+$this->product_qty),
+                    'quantity' => ($product->quantity+(int)$this->product_qty),
                 ]);
                 $discount_amt = 0.00;
                 $perctge_amt = 0.00;
@@ -166,7 +166,7 @@ class OrderView extends Component
                 else
                     $product = Product2::find($order->product_id);
 
-                $product->update(['quantity' => ($product->quantity+$this->product_qty)]);
+                $product->update(['quantity' => ($product->quantity+(int)$this->product_qty)]);
                 $order->update([
                     'qty' => $order->qty-$this->product_qty,
                     'subtotal' => $order->selling_price*($order->qty-$this->product_qty),

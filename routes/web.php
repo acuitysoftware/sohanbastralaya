@@ -71,6 +71,7 @@ Route::get('stock-inserted',[ProductReportController::class,'stockInserted'])->n
 Route::get('product-selling-order',[ProductReportController::class,'productSellingOrder'])->name('product_selling_order');
 Route::get('purchase-report',[ProductReportController::class,'purchaseReport'])->name('purchase_report');
 Route::get('user-purchase-report',[ProductReportController::class,'userPurchaseReport'])->name('user_purchase_report');
+Route::get('due-order-report',[ProductReportController::class,'dueOrderReport'])->name('due_order_report');
 
 
 Route::get('products/add-to-cart',[ProductCartController::class,'addToCart'])->name('add_to_cart');

@@ -173,12 +173,12 @@ class CustomerList extends Component
     {
         if($this->storeUser == 1)
         {
-            $this->orderDetails = ProductOrderDetails::with('productDetails')->where('order_id',$id)->first();
+            $this->orderDetails = ProductOrderDetails::with('productDetails')->withCount('due_payments')->where('order_id',$id)->first();
             $this->viewOrder = ProductOrder::with('customer')->where('order_id',$id)->get();
         }
         else{
 
-            $this->orderDetails = ProductOrderDetails2::with('productDetails')->where('order_id',$id)->first();
+            $this->orderDetails = ProductOrderDetails2::with('productDetails')->withCount('due_payments')->where('order_id',$id)->first();
             $this->viewOrder = ProductOrder2::with('customer')->where('order_id',$id)->get();
         }
         $this->dispatchBrowserEvent('show-order-view-form');
@@ -227,7 +227,7 @@ class CustomerList extends Component
             if($data)
             {
                 $product->update([
-                    'quantity' => ($product->quantity+$this->product_qty),
+                    'quantity' => ($product->quantity+(int)$this->product_qty),
                 ]);
                 $discount_amt = 0.00;
                 $perctge_amt = 0.00;
@@ -239,13 +239,13 @@ class CustomerList extends Component
                 {
                     $perctge_amt = $order->customer->perctge_amt-($order->discount*$this->product_qty);
                 }
-                $order->customer()->update([
+                /* $order->customer()->update([
                     'subtotal' => ($order->customer->subtotal-($order->selling_price*$this->product_qty)),
                     'discount_amt' => $discount_amt,
                     'perctge_amt' => $perctge_amt,
                     'total_amount' => ($order->customer->total_amount-(($order->selling_price-$order->discount)*$this->product_qty)),
 
-                ]);
+                ]); */
                 $order->delete();
 
             }
@@ -282,7 +282,7 @@ class CustomerList extends Component
                 else
                     $product = Product::find($order->product_id);
 
-                $product->update(['quantity' => ($product->quantity+$this->product_qty)]);
+                $product->update(['quantity' => ($product->quantity+(int)$this->product_qty)]);
                 $order->update([
                     'qty' => $order->qty-$this->product_qty,
                     'subtotal' => $order->selling_price*($order->qty-$this->product_qty),
@@ -297,13 +297,13 @@ class CustomerList extends Component
                 {
                     $perctge_amt = $order->customer->perctge_amt-($order->discount*$this->product_qty);
                 }
-                $order->customer()->update([
+                /* $order->customer()->update([
                     'subtotal' => ($order->customer->subtotal-($order->selling_price*$this->product_qty)),
                     'discount_amt' => $discount_amt,
                     'perctge_amt' => $perctge_amt,
                     'total_amount' => ($order->customer->total_amount-(($order->selling_price-$order->discount)*$this->product_qty)),
 
-                ]);
+                ]); */
             }
             $this->showToastr("success",'Product retured successfully');
             return redirect()->route('customer_list');

@@ -81,10 +81,10 @@
                                 <td>{{$row->customer_name}}</td>
                                 <td>{{$row->customer_phone}}</td>
                                 <td>{{date('d/m/Y',strtotime($row->order_date)) }}</td>
-                                <td>{{$row->total_selling_price-$row->total_discount}}</td>
+                                <td>{{env('CURRENCY','₹')}}{{$row->total_selling_price-$row->total_discount}}</td>
                                 @if(Auth::user()->type=='A')
-                                    <td>{{$row->total_purchase_price}}</td>
-                                    <td>{{number_format(($row->total_selling_price-($row->total_purchase_price+$row->total_discount)),2)}}</td>
+                                    <td>{{env('CURRENCY','₹')}}{{$row->total_purchase_price}}</td>
+                                    <td>{{env('CURRENCY','₹')}}{{number_format(($row->total_selling_price-($row->total_purchase_price+$row->total_discount)),2)}}</td>
                                 @endif
                                 <td style="white-space: nowrap;">
                                     @if(Auth::user()->type=='A' || in_array('customer-view', Auth::user()->permissions()->pluck('permission')->toArray()))
@@ -182,8 +182,8 @@
                                     @endphp
                                     <td>{{@$orderDetails->subtotal-@$total_discount}}</td>
                                         @if(Auth::user()->type=='A')
-                                            <td>{{@$purchase_price}}</td>
-                                            <td>{{(@$orderDetails->subtotal-(@$total_discount+$purchase_price))}}</td>
+                                            <td>{{env('CURRENCY','₹')}}{{@$purchase_price}}</td>
+                                            <td>{{env('CURRENCY','₹')}}{{(@$orderDetails->subtotal-(@$total_discount+$purchase_price))}}</td>
                                         @endif
                                     @endif
                                 </tr>
@@ -222,17 +222,17 @@
                                     <td>{{@$row->product_name}}</td>
                                     <td>{{@$row->product_code}}</td>
                                     @if(Auth::user()->type=='A')
-                                        <td>{{@$row->purchase_price}}</td>
+                                        <td>{{env('CURRENCY','₹')}}{{@$row->purchase_price}}</td>
                                     @endif
-                                    <td>{{@$row->selling_price}}</td>
-                                    <td>{{@$row->discount}}</td>
-                                    <td>{{@$row->selling_price-@$row->discount }}</td>
+                                    <td>{{env('CURRENCY','₹')}}{{@$row->selling_price}}</td>
+                                    <td>{{env('CURRENCY','₹')}}{{@$row->discount}}</td>
+                                    <td>{{env('CURRENCY','₹')}}{{@$row->selling_price-@$row->discount }}</td>
                                     @if(Auth::user()->type=='A')
-                                        <td>{{@$row->profit }}</td>
+                                        <td>{{env('CURRENCY','₹')}}{{@$row->profit }}</td>
                                         <td>{{@$row->profit_percentage }}%</td>
                                     @endif
                                     <td>{{@$row->qty}}</td>
-                                    <td>{{@$row->subtotal}}</td>
+                                    <td>{{env('CURRENCY','₹')}}{{@$row->subtotal}}</td>
                                     <td><button type="button" class="btn btn-warning" wire:click="returnOrder({{$row->id}})">Return</button></td>
                                 </tr>
                                 @endforeach
@@ -265,11 +265,11 @@
                                 <tr>
                                     <td>{{@$details->product_name}}</td>
                                     <td>{{@$details->product_code}}</td>
-                                    <td>{{@$details->selling_price}}</td>
-                                    <td>{{@$details->discount}}</td>
-                                    <td>{{@$details->selling_price-@$details->discount }}</td>
+                                    <td>{{env('CURRENCY','₹')}}{{@$details->selling_price}}</td>
+                                    <td>{{env('CURRENCY','₹')}}{{@$details->discount}}</td>
+                                    <td>{{env('CURRENCY','₹')}}{{@$details->selling_price-@$details->discount }}</td>
                                     <td>{{@$details->qty}}</td>
-                                    <td>{{@$details->price*@$details->qty}}</td>
+                                    <td>{{env('CURRENCY','₹')}}{{@$details->price*@$details->qty}}</td>
                                 </tr>
                                 @endforeach
                             </tbody>
@@ -295,11 +295,11 @@
                                     @endphp
                                     <tr>
                                         <th>Discount Amt :</th>
-                                        <td>{{$discount}}</td>
+                                        <td>{{env('CURRENCY','₹')}}{{$discount}}</td>
                                     </tr>
                                     <tr>
                                         <th>Grand Total :</th>
-                                        <td>Rs {{$orderDetails->subtotal-$discount}}</td>
+                                        <td>{{env('CURRENCY','₹')}}{{$orderDetails->subtotal-$discount}}</td>
                                     </tr>
                                     @endif
                                 </tbody>
@@ -422,7 +422,7 @@
                             <tr>
                                 <td>{{$row->order_id}}</td>
                                 <td>{{$row->order_date}}</td>
-                                <td>{{$row->subtotal}}</td>
+                                <td>{{env('CURRENCY','₹')}}{{$row->subtotal}}</td>
                                 @php
                                 $purchase_price =0.00;
                                 $total_discount =0.00;
@@ -432,10 +432,10 @@
                                     $total_discount+=$value->total_discount;
                                 }
                                 @endphp
-                                <td>{{$row->subtotal-$total_discount}}</td>
+                                <td>{{env('CURRENCY','₹')}}{{$row->subtotal-$total_discount}}</td>
                                 @if(Auth::user()->type=='A')
-                                    <td>{{$purchase_price}}</td>
-                                    <td>{{($row->subtotal-$total_discount) -$purchase_price}}</td>
+                                    <td>{{env('CURRENCY','₹')}}{{$purchase_price}}</td>
+                                    <td>{{env('CURRENCY','₹')}}{{($row->subtotal-$total_discount) -$purchase_price}}</td>
                                 @endif
                                 <td style="white-space: nowrap;"><a href="javascript:void(0);" class="action-icon" wire:click="viewOrder({{$row->order_id}})"><i class="mdi mdi-eye"></i></a></td>
                             </tr>

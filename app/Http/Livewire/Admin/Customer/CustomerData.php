@@ -251,12 +251,12 @@ class CustomerData extends Component
     {
         if($this->storeUser == 1)
         {
-            $this->orderDetails = ProductOrderDetails::with('productDetails')->where('order_id',$id)->first();
+            $this->orderDetails = ProductOrderDetails::with('productDetails')->withCount('due_payments')->where('order_id',$id)->first();
             $this->viewOrder = ProductOrder::with('customer')->where('order_id',$id)->get();
         }
         else{
 
-            $this->orderDetails = ProductOrderDetails2::with('productDetails')->where('order_id',$id)->first();
+            $this->orderDetails = ProductOrderDetails2::with('productDetails')->withCount('due_payments')->where('order_id',$id)->first();
             $this->viewOrder = ProductOrder2::with('customer')->where('order_id',$id)->get();
         }
         $this->dispatchBrowserEvent('show-order-view-form');
@@ -305,7 +305,7 @@ class CustomerData extends Component
             if($data)
             {
                 $product->update([
-                    'quantity' => ($product->quantity+$this->product_qty),
+                    'quantity' => ($product->quantity+(int)$this->product_qty),
                 ]);
                 $discount_amt = 0.00;
                 $perctge_amt = 0.00;
@@ -360,7 +360,7 @@ class CustomerData extends Component
                 else
                     $product = Product::find($order->product_id);
 
-                $product->update(['quantity' => ($product->quantity+$this->product_qty)]);
+                $product->update(['quantity' => ($product->quantity+(int)$this->product_qty)]);
                 $order->update([
                     'qty' => $order->qty-$this->product_qty,
                     'subtotal' => $order->selling_price*($order->qty-$this->product_qty),

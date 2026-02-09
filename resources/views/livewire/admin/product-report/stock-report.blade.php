@@ -113,19 +113,19 @@
                                 $total_purchase_price+=(float)$row->total_purchase_price;
                             @endphp
 							<tr>
-								<td>{{$row->date}}</td>
-								<td>{{$row->total_selling_price}}</td>
+								<td>{{ date('d/m/Y h:i', strtotime($row->date)) }}</td>
+								<td>{{env('CURRENCY','₹')}}{{$row->total_selling_price}}</td>
                                 @if(Auth::user()->type=='A')
-								    <td>{{$row->total_purchase_price}}</td>
+								    <td>{{env('CURRENCY','₹')}}{{$row->total_purchase_price}}</td>
                                 @endif
 								<td style="white-space: nowrap;"><a href="javascript:void(0);" class="action-icon"  wire:click="viewOrders('{{$row->date}}')"><i class="mdi mdi-eye"></i>View</a></td>
 							</tr>
 							@endforeach
                             <tr>
                                 <td>Total</td>
-                                <td>{{convert_numbers_to_indian_format($total_sell_price)}}</td>
+                                <td>{{env('CURRENCY','₹')}}{{convert_numbers_to_indian_format($total_sell_price)}}</td>
                                 @if(Auth::user()->type=='A')
-                                <td>{{convert_numbers_to_indian_format($total_purchase_price)}}</td>
+                                <td>{{env('CURRENCY','₹')}}{{convert_numbers_to_indian_format($total_purchase_price)}}</td>
                                 @endif
                                  <td></td>
                             </tr>
@@ -203,9 +203,9 @@
                                 <td>{{$row->product->product_code}}</td>
 
                                 <td>{{$row->quantity}}</td>
-                                <td>{{$row->product->selling_price}}</td>
+                                <td>{{env('CURRENCY','₹')}}{{$row->product->selling_price}}</td>
                                 @if(Auth::user()->type=='A')
-                                    <td>{{$row->product->purchase_price}}</td>
+                                    <td>{{env('CURRENCY','₹')}}{{$row->product->purchase_price}}</td>
                                 @endif
                             </tr>
                             @endforeach

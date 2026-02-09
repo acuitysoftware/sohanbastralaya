@@ -76,9 +76,9 @@ class SubAdminOrderView extends Component
     public function viewOrder($order_id)
     {
         if($this->storeUser == 1)
-            $this->viewOrder = ProductOrderDetails::with('productDetails','returnProducts')->find($order_id);
+            $this->viewOrder = ProductOrderDetails::with('productDetails','returnProducts')->withCount('due_payments')->find($order_id);
         else
-            $this->viewOrder = ProductOrderDetails2::with('productDetails','returnProducts')->find($order_id);
+            $this->viewOrder = ProductOrderDetails2::with('productDetails','returnProducts')->withCount('due_payments')->find($order_id);
 
         $this->dispatchBrowserEvent('show-subadmin-order-details');
     }
@@ -173,7 +173,7 @@ class SubAdminOrderView extends Component
             if($data)
             {
                 $product->update([
-                    'quantity' => ($product->quantity+$this->product_qty),
+                    'quantity' => ($product->quantity+(int)$this->product_qty),
                 ]);
                 $discount_amt = 0.00;
                 $perctge_amt = 0.00;
@@ -185,13 +185,13 @@ class SubAdminOrderView extends Component
                 {
                     $perctge_amt = $order->customer->perctge_amt-($order->discount*$this->product_qty);
                 }
-                $order->customer()->update([
+                /* $order->customer()->update([
                     'subtotal' => ($order->customer->subtotal-($order->selling_price*$this->product_qty)),
                     'discount_amt' => $discount_amt,
                     'perctge_amt' => $perctge_amt,
                     'total_amount' => ($order->customer->total_amount-(($order->selling_price-$order->discount)*$this->product_qty)),
 
-                ]);
+                ]); */
                 $order->delete();
 
             }
@@ -233,7 +233,7 @@ class SubAdminOrderView extends Component
                 else
                     $product = Product2::find($order->product_id);
 
-                $product->update(['quantity' => ($product->quantity+$this->product_qty)]);
+                $product->update(['quantity' => ($product->quantity+(int)$this->product_qty)]);
                 $order->update([
                     'qty' => $order->qty-$this->product_qty,
                     'subtotal' => $order->selling_price*($order->qty-$this->product_qty),
@@ -248,13 +248,13 @@ class SubAdminOrderView extends Component
                 {
                     $perctge_amt = $order->customer->perctge_amt-($order->discount*$this->product_qty);
                 }
-                $order->customer()->update([
+               /*  $order->customer()->update([
                     'subtotal' => ($order->customer->subtotal-($order->selling_price*$this->product_qty)),
                     'discount_amt' => $discount_amt,
                     'perctge_amt' => $perctge_amt,
                     'total_amount' => ($order->customer->total_amount-(($order->selling_price-$order->discount)*$this->product_qty)),
 
-                ]);
+                ]); */
             }
             $this->showToastr("success",'Product retured successfully');
             return redirect()->route('sub_admin_orders.view', $this->user_id);

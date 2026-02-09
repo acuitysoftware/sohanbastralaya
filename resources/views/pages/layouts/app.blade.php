@@ -14,6 +14,8 @@
     <link href="{{ asset('public/assets/css/app-modern.min.css') }}" rel="stylesheet" type="text/css" />
     <link href="{{ asset('public/assets/vendor/fancybox/jquery.fancybox.min.css') }}" rel="stylesheet"
         type="text/css" />
+    <link href="{{ asset('public/assets/vendor/lightbox/css/lightbox.min.css') }}" rel="stylesheet"
+        type="text/css" />
     <link href="{{ asset('public/admin_assets/vendors/general/toastr/build/toastr.min.css') }}" rel="stylesheet"
         type="text/css" />
     <style>
@@ -23,6 +25,10 @@
 
         .modal {
             overflow: scroll !important;
+        }
+        .order_list td{
+            background: #ffff6f;
+                color: #000;
         }
     </style>
 
@@ -100,6 +106,7 @@
     <!-- file upload -->
     <!-- fancybox -->
     <script src="{{ asset('public/assets/vendor/fancybox/jquery.fancybox.min.js') }}"></script>
+    <script src="{{ asset('public/assets/vendor/lightbox/js/lightbox.min.js') }}"></script>
     <script src="{{ asset('public/admin_assets/vendors/general/toastr/build/toastr.min.js') }}" type="text/javascript">
     </script>
     @include('pages.includes.script')
@@ -125,6 +132,15 @@
                   "body").style.visibility = "visible";
             }
         }; */
+        $('.from-amount').keypress(function(event) {
+            console.log('pddlld');
+            if (((event.which != 46 || (event.which == 46 && $(this).val() == '')) ||
+                    $(this).val().indexOf('.') != -1) && (event.which < 48 || event.which > 57)) {
+                event.preventDefault();
+            }
+        }).on('paste', function(event) {
+            event.preventDefault();
+        });
     </script>
 </body>
 

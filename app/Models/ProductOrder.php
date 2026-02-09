@@ -47,6 +47,7 @@ class ProductOrder extends Model
 	{
 		return $this->belongsTo(User::class, 'billing_user','id');
 	}
+	
 
     public function product()
     {

@@ -88,12 +88,9 @@
 
                                 <ul class="list-unstyled mb-0">
                                     <li>
-                                        <p class="mb-2"><span class="fw-bold me-2">Total Selling Price:</span>Rs
-                                            {{ convert_numbers_to_indian_format($total_selling_price) }}</p>
-                                        <p class="mb-2"><span class="fw-bold me-2">Total Purchase Price:</span>Rs
-                                            {{ convert_numbers_to_indian_format($total_purchase_price) }}</p>
-                                        <p class="mb-2"><span class="fw-bold me-2">Net Profit:</span>Rs
-                                            {{ convert_numbers_to_indian_format($total_profit) }}</p>
+                                        <p class="mb-2"><span class="fw-bold me-2">Total Selling Price:</span>{{env('CURRENCY','₹')}}{{ convert_numbers_to_indian_format($total_selling_price) }}</p>
+                                        <p class="mb-2"><span class="fw-bold me-2">Total Purchase Price:</span>{{env('CURRENCY','₹')}}{{ convert_numbers_to_indian_format($total_purchase_price) }}</p>
+                                        <p class="mb-2"><span class="fw-bold me-2">Net Profit:</span>{{env('CURRENCY','₹')}}{{ convert_numbers_to_indian_format($total_profit) }}</p>
 
                                     </li>
                                 </ul>
@@ -110,11 +107,9 @@
                                 <ul class="list-unstyled mb-0">
                                     <li>
                                         <p class="mb-2"><span class="fw-bold me-2">Total Available Selling
-                                                Price:</span>Rs
-                                            {{ convert_numbers_to_indian_format($product_selling_price) }}</p>
+                                                Price:</span>{{env('CURRENCY','₹')}}{{ convert_numbers_to_indian_format($product_selling_price) }}</p>
                                         <p class="mb-2"><span class="fw-bold me-2">Total Available Purchase
-                                                Price:</span>Rs
-                                            {{ convert_numbers_to_indian_format($product_purchase_price) }}</p>
+                                                Price:</span>{{env('CURRENCY','₹')}}{{ convert_numbers_to_indian_format($product_purchase_price) }}</p>
                                     </li>
                                 </ul>
 
@@ -129,10 +124,8 @@
 
                                 <ul class="list-unstyled mb-0">
                                     <li>
-                                        <p class="mb-2"><span class="fw-bold me-2">Total Selling Price:</span>Rs
-                                            {{ convert_numbers_to_indian_format($inseted_product_selling_price) }}</p>
-                                        <p class="mb-2"><span class="fw-bold me-2">Total Purchase Price:</span> Rs
-                                            {{ convert_numbers_to_indian_format($inseted_product_purchase_price) }}</p>
+                                        <p class="mb-2"><span class="fw-bold me-2">Total Selling Price:</span>{{env('CURRENCY','₹')}}{{ convert_numbers_to_indian_format($inseted_product_selling_price) }}</p>
+                                        <p class="mb-2"><span class="fw-bold me-2">Total Purchase Price:</span> {{env('CURRENCY','₹')}}{{ convert_numbers_to_indian_format($inseted_product_purchase_price) }}</p>
                                     </li>
                                 </ul>
                             </div>

@@ -11,6 +11,9 @@ window.addEventListener('show-user-add-form', event => {
 window.addEventListener('view-barcode', event => {
             $('#barcodeModal').modal('show');
         });
+window.addEventListener('view-due-amount', event => {
+            $('#viewDueAmountModal').modal('show');
+        });
 window.addEventListener('edit-view-barcode', event => {
             $('#editBarcodeModal').modal('show');
         });
@@ -182,5 +185,13 @@ function number_check(evt) {
             return false;
 
          return true;
+    }
+function decimal_number_check(event) {
+        var charCode = (event.which) ? event.which : event.keyCode
+        if (((event.which != 46 || (event.which == 46 && $(this).val() == '')) ||
+                    $(this).val().indexOf('.') != -1) && (event.which < 48 || event.which > 57))
+            return false;
+        else
+            return true;
     }
 </script>

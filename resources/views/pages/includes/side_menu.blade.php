@@ -116,6 +116,7 @@
                     <ul class="side-nav-second-level">
                         <li><a href="{{ route('product_report') }}">Purchase Report</a></li>
                         <li><a href="{{ route('stock_report') }}">Stock Report</a></li>
+                        <li><a href="{{ route('due_order_report') }}">Due Amount Report</a></li>
                         <li><a href="{{ route('stock_inserted') }}">Insert Product Report</a></li>
                         <li><a href="{{ route('product_selling_order') }}">Qnt Sold by Product</a></li>
                         <li><a href="{{ route('purchase_report') }}">Expenses </a></li>
@@ -293,6 +294,9 @@
                             @endif
                             @if (in_array('stock-report', $user->permissions()->pluck('permission')->toArray()))
                                 <li><a href="{{ route('stock_report') }}">Stock Report</a></li>
+                            @endif
+                            @if (in_array('due-order-report', $user->permissions()->pluck('permission')->toArray()))
+                                <li><a href="{{ route('due_order_report') }}">Due Amount Report</a></li>
                             @endif
                             @if (in_array('stock-inserted', $user->permissions()->pluck('permission')->toArray()))
                                 <li><a href="{{ route('stock_inserted') }}">Insert Product Report</a></li>
